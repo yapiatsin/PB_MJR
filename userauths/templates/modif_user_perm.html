@@ -1,0 +1,95 @@
+{% extends 'perfect/base.html' %} 
+{% load static %} 
+{% block title %} Modifier permission {% endblock title %} 
+{% block navbar_nav %}
+
+{% endblock navbar_nav %} 
+{% block page_title %}
+<a href="{% url 'compte' %}"><img class="profile-user-img" style="border:none; height:35px;width:35px" src="{% static 'retour.png' %}" alt="Retour"></a>
+<img class="profile-user-img" style="border:none; height:55px;width:55px" src="{% static 'add-user.png' %}" alt="User profile picture">Permission
+{% endblock page_title %} 
+{% block active_page %}Modifier permission compte {% endblock active_page%} 
+{% block main_content %}
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="" style="border-radius:20px">
+                <div id="" class="">
+                    <div class="row p-0 m-0">
+                        <div class="col-md-12 p-0">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        Profil
+                                    </h3>
+
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                                    </div>
+                                </div>
+                                <!-- /.card-header -->
+                                <div class="card-body">
+                                    <div class="card-body box-profile">
+                                        <h3 class="profile-username text-center">{{user.username}}</h3>
+
+                                        <p class="text-muted text-center">{{user.email}}</p>
+
+                                        <ul class="list-group list-group-unbordered mb-3">
+                                            <li class="list-group-item">
+                                                <b>Genre</b> <a class="float-right">{{user.gender}}</a>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Role</b> <a class="float-right">{{user.user_type}}</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- /.card-body -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="" style="border-radius:20px">
+                <div id="" class="">
+                    <div class="row p-0 m-0">
+                        <div class="col-md-12 p-0">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Permissions</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                                    </div>
+                                </div>
+                                <!-- /.card-header -->
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            {% for permission in form.permissions %}
+                                                <div class="col-md-4 form-group">
+                                                    <div class="form-check">
+                                                        {{ permission.tag }}
+                                                        <label class="form-check-label" for="{{ permission.id_for_label }}">
+                                                            {{ permission.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group mt-3 text-center">
+                                            <button type="submit" class="btn btn-outline-primary w-50"style='border-radius:50px' >Enregistrer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
