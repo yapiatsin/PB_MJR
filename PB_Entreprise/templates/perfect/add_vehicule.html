@@ -200,9 +200,9 @@
                     <h3 class="card-title">
                         <button type="button" class="btn btn-default text-danger" id="printButton">PDF <i class='fa fa-file-pdf-o'></i></button>
                         <button type="button" class="btn btn-default text-success">Excell <i class='fa fa-file-excel-o'></i></button>
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Confirmez-vous la suppression des véhicules sélectionnés ?')">
-                            Supprimer les commandes sélectionnées
-                        </button>
+                        {% comment %} <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Confirmez-vous la suppression des véhicules sélectionnés ?')">
+                            Supprimer les véhicules sélectionnés
+                        </button> {% endcomment %}
                     </h3>
 
                     <div class="card-tools">
@@ -244,6 +244,7 @@
                                                     {% endfor %}
                                                 {% endif %}
                                             {% endfor %}
+                                            <a href="{% url 'updatecar' u.pk %}" class="mr-3 text-danger"><i style="font-size: 20px;" class="fa fa-eye text-info"></i></a>
                                         </td>
                                     </tr>
                                 {% endfor %} 
@@ -251,7 +252,19 @@
                         </tbody>
                         <tfoot>
                             <tr class="text-center ">
-                                <th>---</th>
+                                <th>
+                                    {% for categorie, perms in grouped_permissions.items %}
+                                        {% if categorie.categorie == 'permvehi' %}
+                                            {% for perm in perms %}
+                                                {% if perm.name == "sup véhicule" %}
+                                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Confirmez-vous la suppression des véhicules sélectionnés ?')">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </th>
                                 <th>---</th>
                                 <th>---</th>
                                 <th>---</th>

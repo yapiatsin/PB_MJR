@@ -121,6 +121,23 @@
 
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <li class="nav-item">
                     <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#">
                         <i class="fa fa-user-circle text-danger" style="font-size:20px"></i>
@@ -384,8 +401,6 @@
             </div>
         </aside>
 
-        
-
         <div class="content-wrapper" style="background-color: rgb(247,248,250)">
             {% block content_header %}
                 <div class="content-header">
@@ -400,9 +415,6 @@
                                 <ol class="breadcrumb float-sm-right ">
                                     <div class="col-lg-12">
                                         {% block page_action %}
-                                            <a class="nav-link" data-toggle="dropdown" href="#" style="font-size: 18px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700;">filtre
-                                                <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
-                                            </a>
                                             
                                         {% endblock page_action %}
                                     </div>
@@ -416,9 +428,7 @@
                 <div class="container-fluid">
                     <div class="row mt-0">
                         {% block main_content %}
-                        
                             {% if perms %} 
-                                
                             {% endif %} 
                         {% endblock main_content %}
                     </div>
@@ -448,11 +458,6 @@
     </div>
 
     {% block custom_js %}
-    <script>
-        var name = "{{user.id}}";
-        document.getElementById('elder').value = name;
-    </script>
-
     <script type="text/javascript">
         document.getElementById('printButton').addEventListener('click', function() {
             var printContents = document.getElementById('example1').outerHTML;
@@ -470,9 +475,6 @@
     <script src="{% static 'pb/plugins/bootstrap/js/bootstrap.bundle.min.js' %} "></script>
     <!-- AdminLTE App -->
     <script src="{% static 'pb/dists/js/adminlte.min.js' %} "></script>
-    <!-- AdminLTE for demo purposes -->
-    {% comment %}
-    <script src="{% static 'pb/dists/js/demo.js' %} "></script> {% endcomment %}
 
     <script>
         $(function() {

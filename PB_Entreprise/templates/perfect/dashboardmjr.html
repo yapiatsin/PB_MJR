@@ -23,14 +23,16 @@
             <div class="modal-header">
                 <h4 class="modal-title" style="font-weight:700;color: #06497C;">FILTRE</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+
             <div class="modal-body">
                 <div class="card-body">
                     <form id="basic-form" method="get" novalidate>
+
                         <div class="row clearfix">
-                            <div class="col-md-12 form-group"><input type="text" value="Filtre" class="form-control text-center" disabled></div>
+                            <div class="col-md-12 form-group"><input type="text" value="Critère de filtre" class="form-control text-center" disabled></div>
                             <div class="col-6">
                                 <label>Date debut </label>
                                 <div class="form-group">                                    
@@ -51,17 +53,20 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-info" data-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-outline-success" >Afficher</button>
-                    </div>
+                        
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                            <a href="{% url 'Tbd' %}" class="btn btn-outline-info">Actualiser</a>
+                            <button type="submit" class="btn btn-outline-success" >Afficher</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="modal-lg">
     <div class="modal-dialog modal-lg">
@@ -640,6 +645,7 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-4">
             <div class="" style="border-radius:20px">
                 <div class="">

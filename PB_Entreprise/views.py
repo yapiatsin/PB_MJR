@@ -26,6 +26,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from userauths.mixins import CustomPermissionRequiredMixin
 from django.views.decorators.http import require_POST
+from calendar import monthrange
+from calendar import SUNDAY
+from django.utils.timezone import now
+
+from django.core.mail import send_mail
 
 
 def permission_denied_view(request, exception):
@@ -420,7 +425,6 @@ class Bilanday(TemplateView):
         }
         return context
 
-from calendar import monthrange
 class TableaustopView(CustomPermissionRequiredMixin,TemplateView):
     model = Vehicule
     permission_url = 'temps'
@@ -665,9 +669,6 @@ class SuiviFinancierView(TemplateView):
         context['form'] = form
         return context
 
-from calendar import SUNDAY
-from django.db.models import Sum
-from django.utils.timezone import now
 class MyRecetteView(CustomPermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     login_url = 'login'
     template_name = "perfect/myrecette.html"
@@ -1172,6 +1173,36 @@ class DashboardView(CustomPermissionRequiredMixin, LoginRequiredMixin, TemplateV
         }
         return context
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class DashboardMView(TemplateView):
     # login_url = 'login'
     # permission_url = 'dash'
@@ -1806,7 +1837,7 @@ def delete_solde(request, pk):
         messages.error(request, f"Erreur lors de la suppression : {str(e)}")
     return redirect('add_solde')
      
-from django.core.mail import send_mail
+
 class GestionalerteView(LoginRequiredMixin, CustomPermissionRequiredMixin, TemplateView):  
     permission_url = 'alerte'  
     login_url = 'login'                                                                      
@@ -2305,7 +2336,6 @@ def delete_multiple_vehicules(request):
     else:
         messages.warning(request, "Aucun véhicule sélectionné.")
     return redirect('all_vehi')
-
 
 class UpdatVehiculeView(LoginRequiredMixin, UpdateView):
     model = Vehicule
@@ -3197,7 +3227,6 @@ class SaisiComptaView(LoginRequiredMixin, CustomPermissionRequiredMixin,Template
         return context
 
 #------------------------------COMPTABLE-------------------------------
-from django.shortcuts import get_object_or_404
 class AddRecetteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateView):
     login_url = 'login'
     permission_url = 'add_recettes'
@@ -3460,7 +3489,8 @@ class ListRecetView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListView)
     model = Recette
     template_name = 'perfect/liste_recette.html'
     context_object = 'listrecet'
-    timeout_minutes = 220
+    timeout_minutes = 500
+    form_class = DateFormMJR
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -3475,47 +3505,41 @@ class ListRecetView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListView)
         dates = date.today()
         annee = date.today().year
         mois = date.today().month
-        
-        libelle_mois= calendar.month_name[mois]
-        forms = DateForm(self.request.GET)
-        if forms.is_valid():
-            date_debut = forms.cleaned_data['date_debut'] 
-            date_fin = forms.cleaned_data['date_fin']
+
+        recette_queryset = Recette.objects.all()
+        form = self.form_class(self.request.GET)
+        if form.is_valid():
+            categorie_filter = form.cleaned_data.get('categorie')
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
             
-            recets_mois_all = Recette.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_mois_taxi = Recette.objects.filter(vehicule__category__category='TAXI',date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_mois_vtc = Recette.objects.filter(vehicule__category__category='VTC',date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            recets_an_fil_vtc = Recette.objects.filter(vehicule__category__category = 'VTC', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_an_fil_taxi = Recette.objects.filter(vehicule__category__category = 'TAXI', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            recets_an_all = Recette.objects.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            list_mois_recettes = Recette.objects.filter(date_saisie__range=[date_debut, date_fin]).order_by('-id')
-        else:
-            recets_mois_all = Recette.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_mois_taxi = Recette.objects.filter(vehicule__category__category='TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_mois_vtc = Recette.objects.filter(vehicule__category__category='VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            recets_an_fil_vtc = Recette.objects.filter(vehicule__category__category='VTC', date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_an_fil_taxi = Recette.objects.filter(vehicule__category__category='TAXI', date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_an_all = Recette.objects.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            list_mois_recettes = Recette.objects.filter(date_saisie__month=date.today().month).order_by('-id')
-            
+        if categorie_filter:
+            recette_queryset = recette_queryset.filter(vehicule__category__category=categorie_filter)
+
+        if date_debut and date_fin:
+            recette_queryset = recette_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        # ################################----Recettes----#############################
+        recettes_jours = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recettes_jours_format ='{:,}'.format(recettes_jours).replace('',' ')
+
+        recettes_mois = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recettes_mois_format ='{:,}'.format(recettes_mois).replace('',' ')
+
+        recettes_an = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recettes_an_format ='{:,}'.format(recettes_an).replace('',' ')
+
+        liste_rec = recette_queryset
         context={
-            'list_mois_recettes':list_mois_recettes,
+            'liste_rec':liste_rec,
             
-            'recets_mois_all':recets_mois_all,
-            'recets_mois_taxi':recets_mois_taxi,
-            'recets_mois_vtc':recets_mois_vtc,
-            
-            'recets_an_fil_vtc':recets_an_fil_vtc,
-            'recets_an_fil_taxi':recets_an_fil_taxi,
-            'recets_an_all':recets_an_all,
+            'recettes_an_format':recettes_an_format,
+            'recettes_mois_format':recettes_mois_format,
+            'recettes_jours_format':recettes_jours_format,
             
             'dates':dates,
-            'libelles_mois':libelle_mois,
             'annees':annee,
-            'form':forms,
+            'form':form,
             }
         return context 
      
@@ -3536,7 +3560,6 @@ def delete_recette(request, pk):
     except Exception as e:
         messages.error(request, f"Erreur lors de la suppression : {str(e)}")
     return redirect('list_recet')
-
 
 @require_POST
 @login_required
@@ -3666,7 +3689,8 @@ class ListChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListV
     model = ChargeFixe
     template_name = 'perfect/liste_charg_fix.html'
     context_object = 'list_charg_fix'
-    timeout_minutes = 320
+    form_class = DateFormMJR
+    timeout_minutes = 500
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -3678,83 +3702,47 @@ class ListChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListV
         return super().dispatch(request, *args, **kwargs)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        dates =date.today()
-        annee =date.today().year
-        mois =date.today().month
-        
-        libelle_mois= calendar.month_name[mois]
-        forms = DateForm(self.request.GET)
-        if forms.is_valid():
-            date_debut = forms.cleaned_data['date_debut'] 
-            date_fin = forms.cleaned_data['date_fin']
-            
-            chargefixe_all = ChargeFixe.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_all_taxi = ChargeFixe.objects.filter(vehicule__category__category='TAXI',date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_all_vtc = ChargeFixe.objects.filter(vehicule__category__category='VTC',date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_jour = ChargeFixe.objects.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_jour_vtc = ChargeFixe.objects.filter(vehicule__category__category='VTC',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_mois_vtc = ChargeFixe.objects.filter(vehicule__category__category='VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_jour_taxi = ChargeFixe.objects.filter(vehicule__category__category = 'TAXI',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_mois_taxi = ChargeFixe.objects.filter(vehicule__category__category='TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_mois_all = ChargeFixe.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            recets_an_fil_vtc = ChargeFixe.objects.filter(vehicule__category__category = 'VTC', date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_an_fil_taxi = Recette.objects.filter(vehicule__category__category = 'TAXI', date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+        dates = date.today()
+        annee = date.today().year
+        mois = date.today().month
 
-            list_chargefixe = ChargeFixe.objects.filter(date_saisie__range=[date_debut, date_fin]).order_by('-id')
-             
-        else:
+        chargefix_queryset = ChargeFixe.objects.all()
+        form = self.form_class(self.request.GET)
+        if form.is_valid():
+            categorie_filter = form.cleaned_data.get('categorie')
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
             
-            chargefixe_all = ChargeFixe.objects.filter(date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_all_taxi = ChargeFixe.objects.filter(vehicule__category__category = 'TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_all_vtc = ChargeFixe.objects.filter(vehicule__category__category = 'VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_jour = ChargeFixe.objects.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_jour_vtc = ChargeFixe.objects.filter(vehicule__category__category = 'VTC',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_mois_vtc = ChargeFixe.objects.filter(vehicule__category__category='VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_jour_taxi = ChargeFixe.objects.filter(vehicule__category__category = 'TAXI',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            chargefixe_mois_taxi = ChargeFixe.objects.filter(vehicule__category__category='TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            chargefixe_mois_all = ChargeFixe.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
+        if categorie_filter:
+            chargefix_queryset = chargefix_queryset.filter(vehicule__category__category=categorie_filter)
 
-            recets_an_fil_vtc = ChargeFixe.objects.filter(vehicule__category__category = 'VTC', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            recets_an_fil_taxi = ChargeFixe.objects.filter(vehicule__category__category = 'TAXI', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-            list_chargefixe = ChargeFixe.objects.filter(date_saisie__month=date.today().month).order_by('-id')
-            
+        if date_debut and date_fin:
+            chargefix_queryset = chargefix_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        # ################################----Recettes----#############################
+        chargefix_jours = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargefix_jours_format ='{:,}'.format(chargefix_jours).replace('',' ')
+
+        chargefix_mois = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargefix_mois_format ='{:,}'.format(chargefix_mois).replace('',' ')
+
+        chargefix_an = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargefix_an_format ='{:,}'.format(chargefix_an).replace('',' ')
+
+        liste_chargefix = chargefix_queryset
         context={
-            'recets_an_fil_vtc' : recets_an_fil_vtc,
-            'recets_an_fil_taxi': recets_an_fil_taxi,
+            'liste_chargefix':liste_chargefix,
             
-            'list_chargefixe':list_chargefixe,
-            
-            'chargefixe_jour':chargefixe_jour,
-            'chargefixe_jour_vtc':chargefixe_jour_vtc,
-            'chargefixe_mois_vtc':chargefixe_mois_vtc,
-            
-            'chargefixe_mois_taxi':chargefixe_mois_taxi,
-            
-            'chargefixe_jour_taxi':chargefixe_jour_taxi,
-            # 'chargefixe_an_cour':chargefixe_an_cour,
-            
-            'chargefixe_all':chargefixe_all,
+            'chargefix_an_format':chargefix_an_format,
+            'chargefix_mois_format':chargefix_mois_format,
+            'chargefix_jours_format':chargefix_jours_format,
             
             'dates':dates,
-            'libelles_mois':libelle_mois,
             'annees':annee,
-            
-            'chargefixe_mois_all':chargefixe_mois_all,
-            
-            'chargefixe_all_vtc':chargefixe_all_vtc,
-            'chargefixe_all_taxi':chargefixe_all_taxi,
-            'form':forms,
+            'form':form,
             }
-        return context
+        return context 
+     
 
 class UpdateChargFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, UpdateView):
     login_url = 'login'
