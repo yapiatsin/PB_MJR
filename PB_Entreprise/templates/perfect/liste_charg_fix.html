@@ -10,8 +10,8 @@
         <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
     </a>
 {% endblock page_action %}
-
 {% block main_content %}
+
 <div class="modal fade" id="modal-sm">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -156,7 +156,7 @@
                                                                 <td>{{u.auteur.username}}</td>
                                                                 <td class="text-center">
                                                                     {% for categorie, perms in grouped_permissions.items %}
-                                                                        {% if categorie.categorie == 'permrecette' %}
+                                                                        {% if categorie.categorie == 'permchargfix' %}
                                                                             {% for perm in perms %}
                                                                                 {% if perm.name == "modifier charge fixe" %}
                                                                                     <a href="{% url perm.url u.pk %}" class="text-primary">

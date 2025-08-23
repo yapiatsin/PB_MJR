@@ -7,12 +7,95 @@
 {% block page_title %}
 <a href="{% url 'temps_arrets' %}"><img class="profile-user-img" style="border:none; height:35px;width:35px" src="{% static 'retour.png' %}" alt="Retour"></a>
 <img class="profile-user-img" style="border:none; height:45px;width:45px" src="{% static 'visit.png' %}" alt="User profile picture">Saisie & Etat des visites techniques du <b class="text-danger"> {{vehicule}}</b> 
-{% endblock page_title %} 
-{% block page_a %}
-{% endblock page_a %}
-{% block active_page %} Etat des recettes {% endblock active_page%}
+{% endblock page_title %}
+
+{% block page_action %}
+    <a class="nav-link" data-toggle="modal" data-target="#modal-sm" style="font-size: 18px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700;">filtre
+        <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
+    </a>
+{% endblock page_action %}
 {% block main_content %}
 
+<div class="modal fade" id="modal-sm">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius:25px;">
+            <div class="modal-header">
+                <h4 class="modal-title" style="font-weight:700;color: #06497C;">FILTRE</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="card-body">
+                    <form id="basic-form" method="get" novalidate>
+                        <div class="row clearfix">
+                            <div class="col-md-12 form-group"><input type="text" value="Critère de filtre" class="form-control text-center" disabled></div>
+                            <div class="col-6">
+                                <label>Date debut </label>
+                                <div class="form-group">                                    
+                                    {{ form.date_debut }}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label>Date fin</label>
+                                <div class="form-group">                                    
+                                    {{ form.date_fin }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                            <a href="{% url 'add_visit' vehicule.pk %}" class="btn btn-outline-info">Actualiser</a>
+                            <button type="submit" class="btn btn-outline-success" >Afficher</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 col-sm-6 col-md-4">
+    <div class="info-box" style="border-radius:25px;">
+        <span class="info-box-icon bg-info elevation-1" style="border-radius:25px;"><i class="fas fa-clock"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Aujourd'hui</span>
+            <span class="info-box-number" style="font-size:20px;">
+            {{visitech_jours_format}}
+            <small>frs cfa</small>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="clearfix hidden-md-up"></div>
+<div class="col-12 col-sm-6 col-md-4">
+    <div class="info-box mb-3" style="border-radius:25px;">
+    <span class="info-box-icon bg-primary elevation-1" style="border-radius:25px;"><i class="fa fa-calendar"></i></span>
+    <div class="info-box-content">
+        <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Mensuelle</span>
+        <span class="info-box-number" style="font-size:20px;">
+        {{visitech_mois_format}}
+        <small>frs cfa</small>
+        </span>
+    </div>
+    </div>
+</div>
+<div class="clearfix hidden-md-up"></div>
+<div class="col-12 col-sm-6 col-md-4" >
+    <div class="info-box mb-3" style="border-radius:25px;">
+        <span class="info-box-icon bg-success elevation-1" style="border-radius:25px;"><i class="fas fa-calendar"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Annuelle</span>
+            <span class="info-box-number" style="font-size:20px;">
+            {{visitech_an_format}}
+            <small>frs cfa</small>
+            </span>
+        </div>
+    </div>
+</div>
+
+{% comment %} 
 <div class="col-md-12">
     <div class="card" style="color: #0176bf; border-radius: 20px; border-color: #00217b; font-weight: 700;">
         <div class="card-body table-responsive p-0" style="border-radius:8px; border:none">
@@ -83,11 +166,11 @@
             </table>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 <div class="modal fade" id="modal-lg">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content" style="border-radius:25px;">
             <div class="modal-header">
                 <h4 class="modal-title" style="font-weight:700;color: #06497C;">Enrégistrer une nouvelle visite techniques</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -110,7 +193,7 @@
                         <div class="col-md-6 col-sm-6 form-group">
                             <label for="fullname"><b>Montant</b></label> {{forms.montant}}
                         </div>
-                        <div class="col-md-6 col-sm-6 form-group">
+                        <div class="col-md-12 col-sm-6 form-group">
                             <label for="fullname"><b>Reçu</b></label> {{forms.image}}
                         </div>
                     </div>
@@ -127,10 +210,10 @@
 <div class="col-md-5">
     <div class="row">
         <div class="col-md-12">
-            <div class="" style="border-radius:20px">
+            <div class="">
                 <div class="row p-0 m-0">
                     <div class="col-md-12 p-0">
-                        <div class="card">
+                        <div class="card" style="border-radius:25px;">
                             <div class="card-header" style="font-size:15px; font-weight: 700; line-height: 1; color: #8b1516;">
                                 SELECTIONNER UN VEHICULE
                                 <div class="card-tools">
@@ -172,7 +255,7 @@
                 <div id="" class="">
                     <div class="row p-0 m-0">
                         <div class="col-md-12 p-0">
-                            <div class="card" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);backdrop-filter: blur(5.2px);-webkit-backdrop-filter: blur(5.2px);">
+                            <div class="card" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);backdrop-filter: blur(3.2px);-webkit-backdrop-filter: blur(3.2px); border-radius:25px;">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <button type="button" class="btn btn-default" id="printButton">PDF <i class='text-danger fa fa-file-pdf-o'></i></button>
@@ -195,13 +278,13 @@
                                             </tr>
                                         </thead>
                                         <tbody> 
-                                            {% if visite_list %} 
-                                                {% for u in visite_list %}
+                                            {% if liste_visitech %} 
+                                                {% for u in liste_visitech %}
                                                     <tr class="text-center">
                                                         <td>
-                                                            <a href="" class="mr-3 text-primary">{{u.vehicule.immatriculation}}</a>
+                                                            <a class="mr-3 text-primary">{{u.vehicule.immatriculation}}</a>
                                                         </td>
-                                                        <td>{{u.date_vis}}</td>
+                                                        <td>{{u.date_vis|date:"d-m-y à H:m:s"}}</td>
                                                         <td>{{u.montant}}</td>
                                                         <td>{{u.date_saisie|date:"d-m-y"}}</td>
                                                         <td class="text-center">

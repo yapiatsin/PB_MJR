@@ -467,6 +467,10 @@ class AssuranceForm(forms.ModelForm):
         fields = ('date_saisie','date_proch','montant','image')
         widgets = {
             'montant': forms.NumberInput(attrs={'class':'form-control','min':'0'}),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control form-control-lg border p-5',
+                'style': 'height: 100px; background: repeating-linear-gradient(45deg, #eee, #eee 10px, #ddd 10px, #ddd 20px); text-align: center;',
+            }),
         }
 
 class UpdatAssuranceForm(forms.ModelForm):
