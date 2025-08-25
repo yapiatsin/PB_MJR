@@ -3,7 +3,7 @@ from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe 
 from django.utils import timezone
 from userauths.models import CustomUser
-
+from simple_history.models import HistoricalRecords 
 #-------------------------categorie de vehicule-----------------------------#
 class CategoVehi(models.Model):
     cid = ShortUUIDField(unique=True, length=6, prefix='AT', alphabet="abcd1234")
@@ -28,6 +28,7 @@ class Vehicule(models.Model):
     date_mis_service = models.DateField()
     category = models.ForeignKey(CategoVehi, on_delete=models.CASCADE, related_name="catego_vehicule")
     date_saisie = models.DateField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):
         return self.immatriculation
     @property
@@ -43,6 +44,7 @@ class DocumentVehicule(models.Model):
     nom_doc = models.CharField(max_length=100)
     image = models.ImageField(upload_to='documents_vehicules/', null=True, blank=True)
     date_saisie = models.DateField(auto_now_add=True)
+    history = HistoricalRecords()
     class Meta:
         ordering = ['-date_saisie']
     def __str__(self):
@@ -58,6 +60,7 @@ class Recette(models.Model):
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def save(self, *args, **kwargs):
         # Remplir automatiquement auteur_nom si l'auteur existe
         if self.auteur:
@@ -76,6 +79,7 @@ class ChargeFixe(models.Model):
     Num_fact = models.CharField(max_length=100)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self) : 
         return '%s ' % (self.vehicule.immatriculation)
     
@@ -89,6 +93,7 @@ class ChargeVariable(models.Model):
     Num_fact = models.CharField(max_length=100)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self) : 
         return '%s ' % (self.vehicule.immatriculation)
     
@@ -101,6 +106,7 @@ class ChargeAdminis(models.Model):
     Num_fact = models.CharField(max_length=100)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self) : 
         return '%s ' % (self.libelle)
 
@@ -150,6 +156,7 @@ class Encaissement(models.Model):
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):  # sourcery skip: replace-interpolation-with-fstring
         return '%s - %s' % (self.libelle, self.montant)
 
@@ -160,6 +167,7 @@ class Decaissement(models.Model):
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):  # sourcery skip: replace-interpolation-with-fstring
         return '%s - %s' % (self.libelle, self.montant)
   
@@ -190,12 +198,13 @@ class Reparation(models.Model):
     date_sortie = models.DateTimeField()
     motif = models.CharField(max_length=20, choices=MOTIF_REPARATION)
     image = models.ImageField(upload_to="reparation_fil", blank=True)
-    num_fich = models.IntegerField()
+    num_fich = models.CharField(max_length=50)
     description = models.TextField(max_length=500, null=True, blank=True)
     montant = models.IntegerField(default=0)
     prestation = models.IntegerField(default=0)
     date_saisie = models.DateField(auto_now_add=True)
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):
         return '%s ' % (self.vehicule.immatriculation)  
 
@@ -207,8 +216,14 @@ class Piece(models.Model):
     reparation = models.ForeignKey(Reparation, on_delete=models.CASCADE, related_name="pieces")
     libelle = models.CharField(max_length=30, null=True, blank=True)
     lieu = models.CharField(max_length=20, choices=LIEU_PIECE)
+    quantite = models.PositiveIntegerField(default=1)
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField(auto_now_add=True)
+    auteur = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, related_name='user_piece', null=True, blank=True)
+    history = HistoricalRecords()
+    @property
+    def prix_total(self):
+        return self.quantite * self.montant
     def __str__(self):
         return '%s ' % (self.libelle)
     
@@ -218,6 +233,7 @@ class PiecEchange(models.Model):
     libelle = models.CharField(max_length=30, null=True, blank=True)
     lieu = models.CharField(max_length=20, choices=LIEU_PIECE)
     montant = models.IntegerField(default=0)
+    # quantite = models.PositiveIntegerField(default=1)
     date_saisie = models.DateField()
     date = models.DateTimeField(auto_now_add=True)
     def __str__(self):
@@ -233,6 +249,7 @@ class Entretien(models.Model):
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField(auto_now_add=True)
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):
         return self.vehicule.immatriculation
     @property
@@ -249,6 +266,7 @@ class Autrarret(models.Model):
     numfich = models.CharField(max_length=100, null=True, blank=True)
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):
         return '%s ' % (self.vehicule.immatriculation)
 
@@ -262,6 +280,7 @@ class VisiteTechnique(models.Model):
     montant = models.IntegerField(default=0)
     date_saisie = models.DateField(auto_now_add=True)
     date = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
     def __str__(self):
         return self.vehicule.immatriculation
     @property

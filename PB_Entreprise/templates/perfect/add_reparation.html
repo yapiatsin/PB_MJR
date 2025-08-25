@@ -1,229 +1,277 @@
 {% extends 'perfect/base.html' %} 
 {% load static %} 
-{% block title %}Saisie & Etat des réparations  {% endblock title %} 
-{% block navbar_nav %}
-
-{% endblock navbar_nav %} 
+{% block title %} Saisie & Etat des réparations {% endblock title %}  
 {% block page_title %}
 <a href="{% url 'temps_arrets' %}"><img class="profile-user-img" style="border:none; height:35px;width:35px" src="{% static 'retour.png' %}" alt="Retour"></a>
 <img class="profile-user-img" style="border:none; height:45px;width:45px" src="{% static 'clereparat.png' %}" alt="User profile picture">Saisie & Etat des réparations du <b class="text-danger"> {{vehicule}}</b> 
 {% endblock page_title %} 
-{% block page_a %}
-{% endblock page_a %}
-{% block active_page %} Etat des recettes {% endblock active_page%}
+
+{% block navbar_nav %}
+  <a type="" class="btn text-danger" style="font-weight:700" data-toggle="modal" data-target="#modal-lg1" title="Cliquer pour selectionner un véhicule">Selectionner un véhicule <i class='fa fa-plus-square'></i></a>
+{% endblock navbar_nav %} 
+
+{% block page_action %}
+    <a class="nav-link" data-toggle="modal" data-target="#modal-sm" style="font-size: 18px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700;">filtre
+        <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
+    </a>
+{% endblock page_action %}
+
 {% block main_content %}
-<style>
+{% comment %} <style>
     .hidden {
         display: none;
     }
-</style>
-<div class="col-md-12">
-    <div class="card" style="color: #0176bf; border-radius: 20px; border-color: #00217b; font-weight: 700;">
-        <div class="card-body table-responsive p-0" style="border-radius:8px; border:none">
-            <table class="table table text-nowrap">
-                <tr>
-                    <div class="col-md-12">
-                        <div class="row bg-danger">
-                            <div class="col-md-2">
-                                <td style="border: none;">
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'vtc.png' %}" alt="" srcset="">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 15px;color: #06497C">Aujourd'hui</div>
-                                            <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">
-                                                {{repare_jours}}
-                                                <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="border: none;">
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 6px; margin-left: 0px;" src="{% static 'taxi.png' %}" alt="" srcset="">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 15px;color: #06497C"><small>{{mois}}</small></div>
-                                            <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">
-                                                {{repare_mois}}
-                                                <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="border: none;">
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 8px; margin-left: 3px;" src="{% static 'marge.png' %}" alt="" srcset="">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 15px;color: #06497C"><small>{{annee}}</small></div>
-                                            <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">
-                                                {{repare_an}}
-                                                <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="border: none;">
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 8px;margin-left: 0px;" src="{% static 'rech.png' %}" alt="" srcset="">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 15px;color: #06497C">Résultat</div>
-                                            <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">{{repare_result}}
-                                                <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </div>
-                        </div>
-                    </div>
-                </tr>
-            </table>
-        </div>
-    </div>
+</style> {% endcomment %}
+
+<div class="modal fade" id="modal-lg1">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" style="font-weight:700;color: #06497C;">Selectionner un véhicule</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="card-body">
+                  <table id="example2" class="table table-bordered table-striped">
+                      <thead>
+                          <tr class=" text-center text-danger ">
+                              <th>IMMATRICULATION</th>
+                              <th>MARQUE-CATEGORIE</th>
+                          </tr>
+                      </thead>
+                      <tbody> 
+                          {% if vehicules %} 
+                              {% for u in vehicules %}
+                                  <tr class="text-center">
+                                      <td><a href="{% url 'add_reparation' u.pk %}" class="mr-3 text-primary">{{u.immatriculation}}</a></td>
+                                      <td>{{u.immatriculation}}-{{u.category}}</td>
+                                  </tr>
+                              {% endfor %} 
+                          {% endif %}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+  </div>
 </div>
 
- <div class="modal fade" id="modal-lg">
+<div class="modal fade" id="modal-sm">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content" style="border-radius:25px;">
             <div class="modal-header">
-                <h4 class="modal-title" style="font-weight:700;color: #06497C;">Enrégistrer une nouvelle réparation</h4>
+                <h4 class="modal-title" style="font-weight:700;color: #06497C;">FILTRE</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-                <form method='post' role="form" id="quickForm" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="row card-body">
-                        <div class="col-md-12 form-group ">
-                            <input value="REPARATION" class="form-control text-center" id="exampleInputPassword1" disabled>
-                        </div>
-                        <div class="col-md-12 col-sm-6  form-group">
-                            <label>Motif de réparation</label> {{forms.motif}}
-                        </div>
-                        <div class="col-md-4 col-sm-6  form-group">
-                            <label>Heure d'entrée</label> {{forms.date_entree}}
-                        </div>
-                        <div class="col-md-4 col-sm-6  form-group">
-                            <label>Heure de sortie</label> {{forms.date_sortie}}
-                        </div>
-                        <div class="col-md-4 col-sm-6  form-group">
-                            <label>N°facture</label> {{forms.num_fich}}
-                        </div>
-                        <div class="col-md-4 col-sm-6  form-group">
-                            <label>Réçu</label> {{forms.image}}
-                        </div>
-                        <div class="col-md-12 col-sm-6  form-group">
-                            <label>Description de la réparation</label> {{forms.description}}
-                        </div>
-                        <div class="col-md-12 form-group ">
-                            <input value="LES PIECES DE REPARATION" class="form-control text-center" id="exampleInputPassword1" disabled>
-                        </div>
-                       
-                        {% if piece_formset %}
-                          {{ piece_formset.management_form }} 
-                          <div id="empty-ord-forms-listes" class="p-2 col-md-12">
-                            {% for form in piece_formset %}
-                              <div class="ingredient-ord-form" class="col-md-3 form-group">
-                                <label>Libelle</label> 
-                                {{ form.libelle }}
-                              </div>
-                              <div class="ingredient-ord-form" class="col-md-2  form-group">
-                                <label>Lieu</label> 
-                                {{ form.lieu }}
-                              </div>
-                              <div class="ingredient-ord-form" class="col-md-2 form-group">
-                                <label>Montant</label> 
-                                {{ form.montant }}
-                              </div>
-                            <hr>
-                            {% endfor %}
-                              <div id="empty-ord-forms" class="col-md-12 form-group hidden">
-                                <hr>
-                                {{ piece_formset.empty_form }}
-                              </div>
-                          </div>
-                        {% endif %}
-                        <div class="col-md-12 col-sm-6  form-group">
-                            <label>Coût de pretation</label> {{forms.prestation}}
-                        </div>
-                        <div class="col-md-12 col-sm-6  form-group">
-                            <label>Montant total de la réparation</label> {{forms.montant}}
-                        </div>
-                        <div class=" p-2 col-md-12 form-group">   
-                          <button id="add-piece" type="button" class="btn btn-outline-primary">+</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer justify-content-between">
-                      <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> 
-
-<div class="col-md-5">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="" style="border-radius:20px">
-                    <div class="row p-0 m-0">
-                        <div class="col-md-12 p-0">
-                            <div class="card">
-                                <div class="card-header" style="font-size:15px; font-weight: 700; line-height: 1; color: #8b1516;">
-                                    SELECTIONNER UN VEHICULE
-                                    <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-                                    </div>
+                <div class="card-body">
+                    <form id="basic-form" method="get" novalidate>
+                        <div class="row clearfix">
+                            <div class="col-md-12 form-group"><input type="text" value="Critère de filtre" class="form-control text-center" disabled></div>
+                            <div class="col-6">
+                                <label>Date debut </label>
+                                <div class="form-group">                                    
+                                    {{ form.date_debut }}
                                 </div>
-                                <div class="card-body">
-                                    <table id="example1" class="table table-bordered table-striped">
-                                        <thead>
-                                            <tr class=" text-center text-danger ">
-                                                <th>IMMATRICULATION</th>
-                                                <th>CATEGORIE</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody> 
-                                            {% if vehicules %} 
-                                                {% for u in vehicules %}
-                                                    <tr class="text-center">
-                                                        <td><a href="{% url 'add_reparation' u.pk %}" class="mr-3 text-primary">{{u.immatriculation}}</a></td>
-                                                        <td>{{u.category}}</td>
-                                                    </tr>
-                                                {% endfor %} 
-                                            {% endif %}
-                                        </tbody>
-                                    </table>
+                            </div>
+                            <div class="col-6">
+                                <label>Date fin</label>
+                                <div class="form-group">                                    
+                                    {{ form.date_fin }}
                                 </div>
-                            </div> 
+                            </div>
+                            <div class="col-12">
+                              <label>Date fin</label>
+                                <div class="form-group">                                    
+                                    {{ form.motif }}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                            <a href="{% url 'add_reparation' vehicule.pk %}" class="btn btn-outline-info"><i class="fa fa-refresh"></i></a>
+                            <button type="submit" class="btn btn-outline-success" >Afficher</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="col-md-7">
+<div class="col-12 col-sm-6 col-md-3">
+    <div class="info-box" style="border-radius:25px;">
+        <span class="info-box-icon bg-primary elevation-1" style="border-radius:25px;"><i class="fas fa-plus"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Nombre total</span>
+            <span class="info-box-number" style="font-size:20px;">
+            {{reparat_total}}
+            <small></small>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="clearfix hidden-md-up"></div>
+<div class="col-12 col-sm-6 col-md-3">
+    <div class="info-box" style="border-radius:25px;">
+        <span class="info-box-icon bg-secondary elevation-1" style="border-radius:25px;"><i class="fas fa-clock"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Aujourd'hui</span>
+            <span class="info-box-number" style="font-size:20px;">
+            {{reparat_jours_format}}
+            <small>frs cfa</small>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="clearfix hidden-md-up"></div>
+<div class="col-12 col-sm-6 col-md-3">
+    <div class="info-box mb-3" style="border-radius:25px;">
+    <span class="info-box-icon bg-info elevation-1" style="border-radius:25px;"><i class="fa fa-calendar"></i></span>
+    <div class="info-box-content">
+        <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Mensuelle</span>
+        <span class="info-box-number" style="font-size:20px;">
+        {{reparat_mois_format}}
+        <small>frs cfa</small>
+        </span>
+    </div>
+    </div>
+</div>
+
+<div class="clearfix hidden-md-up"></div>
+<div class="col-12 col-sm-6 col-md-3" >
+    <div class="info-box mb-3" style="border-radius:25px;">
+        <span class="info-box-icon bg-success elevation-1" style="border-radius:25px;"><i class="fas fa-calendar"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Annuelle</span>
+            <span class="info-box-number" style="font-size:20px;">
+            {{reparat_an_format}}
+            <small>frs cfa</small>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-lg">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" style="font-weight:700;color: #06497C;">
+            Enrégistrer une nouvelle réparation du <b class="text-danger"> {{vehicule}}</b>
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+  
+        <div class="modal-body">
+          <form method="post" role="form" id="quickForm" enctype="multipart/form-data">
+            {% csrf_token %}
+  
+            <div class="row card-body">
+              <!-- Info Réparation -->
+              <div class="col-md-12 form-group">
+                <input value="REPARATION" class="form-control text-center" disabled>
+              </div>
+  
+              <div class="col-md-3 col-sm-6 form-group">
+                <label>Motif de réparation</label> {{ forms.motif }}
+              </div>
+              <div class="col-md-3 col-sm-6 form-group">
+                <label>N°facture</label> {{ forms.num_fich }}
+              </div>
+              <div class="col-md-3 col-sm-6 form-group">
+                <label>Heure d'entrée</label> {{ forms.date_entree }}
+              </div>
+              <div class="col-md-3 col-sm-6 form-group">
+                <label>Heure de sortie</label> {{ forms.date_sortie }}
+              </div>
+  
+              <div class="col-md-12 form-group">
+                <label>Réçu</label> {{ forms.image }}
+              </div>
+              <div class="col-md-12 form-group">
+                <label>Description de la réparation</label> {{ forms.description }}
+              </div>
+  
+              <hr class="col-md-12">
+  
+              <!-- Partie Pièces -->
+              <div class="col-md-12 form-group">
+                <input value="LES PIÈCES DE REPARATION" class="form-control text-center" disabled>
+              </div>
+  
+              <div class="col-md-12">
+                <div class="text-right mb-3">
+                  <button type="button" class="btn btn-primary" id="add-piece" style="position:absolute;right: -80px; top:95px; z-index:1; border-radius: 50px;"><i class="fa fa-plus"></i> Ajouter</button>
+                </div>
+                <div id="piece-formset-container">
+                  {{ piece_formset.management_form }}
+                  {% for form in piece_formset %}
+                    <div class="ligne-piece border p-3 mb-2 bg-light rounded">
+                      <div class="row">
+                        <div class="col-md-3">
+                          {{ form.libelle.label_tag }}
+                          {{ form.libelle }}
+                        </div>
+                        <div class="col-md-3">
+                          {{ form.lieu.label_tag }}
+                          {{ form.lieu }}
+                        </div>
+                        <div class="col-md-2">
+                          {{ form.quantite.label_tag }}
+                          {{ form.quantite }}
+                        </div>
+                        <div class="col-md-3">
+                          {{ form.montant.label_tag }}
+                          {{ form.montant }}
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end" style="position: relative; top: -3px;">
+                          <button type="button" class="btn btn-outline-danger btn-sm remove-piece" style="margin-top: -15px;">🗑</button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+  
+              <hr class="col-md-12">
+              <!-- Coûts -->
+              <div class="col-md-12 form-group">
+                <label>Coût de prestation</label> {{ forms.prestation }}
+              </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class=" btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">Annuler</button>
+                <button type="submit" class="btn btn-outline-primary">💾 Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div class="col-md-12">
     <div class="row">
         <div class="col-md-12">
             <div class="" style="border-radius:20px">
                 <div id="" class="">
                     <div class="row p-0 m-0">
                         <div class="col-md-12 p-0">
-                            <div class="card" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);backdrop-filter: blur(5.2px);-webkit-backdrop-filter: blur(5.2px);">
+                            <div class="card" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);backdrop-filter: blur(5.2px);-webkit-backdrop-filter: blur(5.2px);border-radius:20px">
                                 <div class="card-header">
                                     <h3 class="card-title">
-                                        <button type="button" class="btn btn-default text-danger" id="printButton">PDF <i class='fa fa-file-pdf-o'></i></button>
-                                        <button type="button" class="btn btn-default text-success">Excell <i class='fa fa-file-excel-o'></i></button>
-                                        <button type="button" class="btn btn-default text-primary" style="font-weight:700" data-toggle="modal" data-target="#modal-lg">Saisie <i class='fa fa-plus-square'></i></button>
+                                        <button type="button" class="btn btn-default" id="printButton">PDF <i class='fa fa-file-pdf-o'></i></button>
+                                        <button type="button" class="btn btn-default">Excell <i class='fa fa-file-excel-o'></i></button>
+                                        <button type="button" class="btn btn-default" style="font-weight:700" data-toggle="modal" data-target="#modal-lg">Saisie <i class='fa fa-plus-square'></i></button>
+                                        <a href="{% url 'add_reparation' vehicule.pk %}" class="btn btn-outline-info"><i class="fa fa-refresh"></i></a>
                                     </h3>
                                     <div class="card-tools">
                                         <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
@@ -231,9 +279,9 @@
                                 </div>
                                 <!-- /.card-header -->
                                 <div class="card-body">
-                                    <table id="example2" class="table table-bordered table-striped">
+                                    <table id="example1" class="table table-bordered table-striped">
                                         <thead>
-                                            <tr class=" text-center text-danger ">
+                                            <tr class=" text-center text-danger">
                                                 <th>IMMAT</th>
                                                 <th>MOTIF</th>
                                                 <th>MONTANT</th>
@@ -243,12 +291,10 @@
                                             </tr>
                                         </thead>
                                         <tbody> 
-                                            {% if repare_list %} 
-                                                {% for u in repare_list %}
+                                            {% if liste_reparat %} 
+                                                {% for u in liste_reparat %}
                                                     <tr class="text-center">
-                                                        <td>
-                                                            <a href="{% url 'detail_reparat' u.pk %}" class="mr-3 text-primary">{{u.vehicule.immatriculation}}</a>
-                                                        </td>
+                                                        <td><a href="{% url 'detail_reparat' u.pk %}" class="mr-3 text-primary">{{u.vehicule.immatriculation}}</a></td>
                                                         <td>{{u.motif}}</td>
                                                         <td>{{u.montant}}</td>
                                                         <td>{{u.date_saisie}}</td>
@@ -279,9 +325,66 @@
     </div>
 </div>
 
-{% endblock main_content %}
 {% block custom_js %}
-<script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const formsetContainer = document.getElementById('piece-formset-container');
+      const addButton = document.getElementById('add-piece');
+      const totalForms = document.querySelector('#id_pieces-TOTAL_FORMS'); // ⚠ Vérifie bien le préfixe (ici 'pieces')
+    
+      addButton.addEventListener('click', function () {
+        const currentFormCount = parseInt(totalForms.value);
+        const firstForm = formsetContainer.querySelector('.ligne-piece');
+        if (!firstForm) return;
+        // Clone du premier formulaire
+        const newForm = firstForm.cloneNode(true);
+        // Réinitialiser les valeurs
+        newForm.querySelectorAll('input, select, textarea').forEach(function (input) {
+          input.value = '';
+        });
+        // Mise à jour des indexes
+        newForm.querySelectorAll('input, select, textarea').forEach(function (input) {
+          if (input.name) {
+            input.name = input.name.replace(/pieces-\d+-/, `pieces-${currentFormCount}-`);
+          }
+          if (input.id) {
+            input.id = input.id.replace(/id_pieces-\d+-/, `id_pieces-${currentFormCount}-`);
+          }
+        });
+        totalForms.value = currentFormCount + 1;
+        formsetContainer.appendChild(newForm);
+      });
+      // Suppression d'une pièce
+      formsetContainer.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('remove-piece')) {
+          const ligne = e.target.closest('.ligne-piece');
+          ligne.remove();
+          updateFormIndexes();
+        }
+      });
+      function updateFormIndexes() {
+        const forms = document.querySelectorAll('.ligne-piece');
+        forms.forEach(function (form, index) {
+          form.querySelectorAll('input, select, textarea').forEach(function (input) {
+            if (input.name) {
+              input.name = input.name.replace(/pieces-\d+-/, `pieces-${index}-`);
+            }
+            if (input.id) {
+              input.id = input.id.replace(/id_pieces-\d+-/, `id_pieces-${index}-`);
+            }
+          });
+        });
+        totalForms.value = forms.length;
+      }
+    });
+  </script>
+{% endblock custom_js %}
+
+{% endblock main_content %}
+
+
+
+{% comment %} <script>
     const addMorePieceBtn = document.getElementById('add-piece');
     const totalForms = document.getElementById('id_pieces-TOTAL_FORMS');
     addMorePieceBtn.addEventListener('click', addPieceNewForm);
@@ -323,7 +426,4 @@
             alert('Veuillez remplir tous les champs obligatoires.');
         }
     });
-</script>
-{% endblock custom_js %}
-
-
+</script> {% endcomment %}

@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import DateInput
 from .models import *
+from django.forms import inlineformset_factory, modelformset_factory, BaseModelFormSet
 
 class DateForm(forms.Form):
     date_debut = forms.DateField(widget=forms.DateInput(attrs={'type': 'date','class':'form-control'}))
@@ -17,6 +18,22 @@ class DateFormMJR(forms.Form):
 
 class DatebilanForm(forms.Form):
     date_bilan = forms.DateField(widget=forms.DateInput(attrs={'type':'date','class':'form-control'}))
+
+
+MOTIF_REPARATION = (
+    ('Visite', 'Visite'),
+    ('Panne', 'Panne'),
+    ('Accident', 'Accident'),
+)
+
+class DateFormRepar(forms.Form):
+    date_debut = forms.DateField(widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}), required=False)
+    date_fin = forms.DateField(widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}), required=False)
+    motif = forms.ChoiceField(
+        choices=[('', '--- Tous les motifs ---')] + list(MOTIF_REPARATION),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
 class CategorieForm(forms.ModelForm):
     class Meta:
@@ -500,6 +517,10 @@ class EntretienForm(forms.ModelForm):
             'montant': forms.NumberInput(attrs={'class':'form-control','min':'0'}),
             'date_sortie' :DateInput(attrs={"type": "datetime-local","class":"form-control"}, format="%Y-%m-%dT%H:%M",),
             'date_Entret' :DateInput(attrs={"type": "datetime-local","class":"form-control"}, format="%Y-%m-%dT%H:%M",),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control form-control-lg border p-5',
+                'style': 'height: 100px; background: repeating-linear-gradient(45deg, #eee, #eee 10px, #ddd 10px, #ddd 20px); text-align: center;',
+            }),
         }
     def __init__(self, *args, **kwargs):
         super(EntretienForm, self).__init__(*args, **kwargs)
@@ -517,35 +538,33 @@ class UpdatEntretienForm(forms.ModelForm):
             'date_proch' : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'date_Entret' : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
         }
-        
     def __init__(self, *args, **kwargs):
         super(UpdatEntretienForm, self).__init__(*args, **kwargs)
         # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields["date_Entret"].input_formats = ("%Y-%m-%d",)
         self.fields["date_proch"].input_formats = ("%Y-%m-%d",) 
 
-from django.forms import inlineformset_factory, modelformset_factory, BaseModelFormSet
 class ReparationForm(forms.ModelForm):
     class Meta:
         model = Reparation
-        fields = ('date_entree','date_sortie','num_fich','description','montant','image','auteur','motif','prestation')
+        exclude = ('montant', "auteur", "vehicule")
         widgets = {
             'motif': forms.Select(attrs={'class':'form-control'}),
-            'auteur': forms.TextInput(attrs={'class':'form-control','value':'', 'id': 'elder','type':'hidden'}),
-            'montant': forms.NumberInput(attrs={'class':'form-control','min':'0'}),
             'prestation': forms.NumberInput(attrs={'class':'form-control'}),
-            'num_fich': forms.NumberInput(attrs={'class':'form-control'}),
+            'num_fich': forms.TextInput(attrs={'class':'form-control'}),
             'description': forms.Textarea(attrs={'class':'form-control','rows':'3'}),
             'date_entree' :DateInput(attrs={"type": "datetime-local","class":"form-control"}, format="%Y-%m-%dT%H:%M",),
             'date_sortie' :DateInput(attrs={"type": "datetime-local","class":"form-control"}, format="%Y-%m-%dT%H:%M",),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control form-control-lg border p-5',
+                'style': 'height: 100px; background: repeating-linear-gradient(45deg, #eee, #eee 10px, #ddd 10px, #ddd 20px); text-align: center;',
+            }),
         } 
     def __init__(self, *args, **kwargs):
         super(ReparationForm, self).__init__(*args, **kwargs)
-        # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields["date_entree"].input_formats = ("%Y-%m-%dT%H:%M",)
         self.fields["date_sortie"].input_formats = ("%Y-%m-%dT%H:%M",)   
  
-
 class UpdatReparationForm(forms.ModelForm):
     class Meta:
         model = Reparation
@@ -563,27 +582,17 @@ class UpdatReparationForm(forms.ModelForm):
         self.fields["date_entree"].input_formats = ("%Y-%m-%dT%H:%M",)
         self.fields["date_sortie"].input_formats = ("%Y-%m-%dT%H:%M",)   
 
-
 class PieceForm(forms.ModelForm):
     class Meta:
         model = Piece
-        fields = ('libelle','montant','lieu')
+        fields = ('libelle', 'montant', 'lieu', 'quantite')
         widgets = {
-            'montant': forms.NumberInput(attrs={'class':'form-control','min':'0'}),
             'libelle': forms.TextInput(attrs={'class':'form-control'}),
             'lieu' :forms.Select(attrs={"class":"form-control"},),
+            'quantite': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'montant': forms.NumberInput(attrs={'class':'form-control','min':'0'}),  
         }
-    def __init__(self, *args, **kwargs):
-        super(PieceForm, self).__init__(*args, **kwargs)
-        self.fields["date_saisie"].input_formats = ("%Y-%m-%dT%H:%M",)
-
-PieceFormSet = inlineformset_factory(Reparation, Piece, fields=['libelle', 'lieu', 'montant',],
-                                          widgets = {'libelle':forms.TextInput(attrs={'class':'form-control'}),
-                                                     'montant':forms.NumberInput(attrs={'class':'form-control'}),
-                                                     'lieu':forms.Select(attrs={'class':'form-control'}),
-                                                    },extra=1
-                                            )      
-        
+PieceFormSet = inlineformset_factory(Reparation, Piece, form=PieceForm, extra=1, can_delete=True)      
 class UpdatPieceForm(forms.ModelForm):
     class Meta:
         model = Piece

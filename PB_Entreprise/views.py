@@ -31,7 +31,7 @@ from calendar import SUNDAY
 from django.utils.timezone import now
 
 from django.core.mail import send_mail
-
+from userauths.utils import search_vehicules
 
 def permission_denied_view(request, exception):
     return render(request, 'no_acces.html',status=403)
@@ -1415,9 +1415,6 @@ class DashboardMView(TemplateView):
                 "fill": True,
             })
 
-        print('')
-        print(datasets,'##########',labelscat,"###########",datacat)
-        print('')
         context={
             'tot_recets':total_recette_format,
             "datasets_json": json.dumps(datasets),
@@ -3053,12 +3050,98 @@ class SaisieGaragView(LoginRequiredMixin, CustomPermissionRequiredMixin, Templat
             'form':forms,
         }
         return context
- 
+
+# def search_employe_view(request):
+#     query = request.GET.get('q', '')
+#     resultats = search_employes(query) if query else Dossiersante.objects.none()
+#     return render(request, 'app/recherche_dossier.html', {'resultats': resultats, 'query': query, 'statut': 'Employé'})
+
+# class TempsArretsView(LoginRequiredMixin, CustomPermissionRequiredMixin, TemplateView):
+#     login_url = 'login'
+#     permission_url = 'temps_arrets'
+#     template_name = 'perfect/saisi_temp_arret.html'
+#     timeout_minutes = 120
+#     def dispatch(self, request, *args, **kwargs):
+#         last_activity = request.session.get('last_activity')
+#         if last_activity:
+#             last_activity = datetime.strptime(last_activity, '%Y-%m-%d %H:%M:%S')
+#             if datetime.now() - last_activity > timedelta(minutes=self.timeout_minutes):
+#                 logout(request)
+#                 messages.warning(request, "Vous avez été déconnecté ")
+#                 return redirect("login")
+#         return super().dispatch(request, *args, **kwargs)
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         dates = date.today()
+#         annee = date.today().year
+#         mois = date.today().month
+#         user = self.request.user
+#         # Define the filtering based on user type and gerant_voiture condition
+#         if user.user_type == "4":
+#             try:
+#                 gerant = user.gerants.get()
+#                 if gerant.gerant_voiture == "VTC":
+#                     vehicules = Vehicule.objects.filter(category__category="VTC")
+#                 else:
+#                     vehicules = Vehicule.objects.filter(category__category="TAXI")
+#             except Gerant.DoesNotExist:
+#                 vehicules = Vehicule.objects.none()  # No vehicles if no Gerant linked
+#         elif user:
+#             try:
+#                 vehicules = Vehicule.objects.all()
+#             except:
+#                 vehicules = Vehicule.objects.none() 
+#         else:
+#             print("*****ALL*******")
+        
+#         libelle_mois= calendar.month_name[mois]
+#         forms = DateForm(self.request.GET)
+#         if forms.is_valid():
+#             date_debut = forms.cleaned_data['date_debut'] 
+#             date_fin = forms.cleaned_data['date_fin']
+            
+#             autarre_som = Autrarret.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+#             autarre_cpt = Autrarret.objects.filter(date_saisie__range=[date_debut, date_fin]).count()
+            
+#             vis_all = VisiteTechnique.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+#             ent_all = Entretien.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+#             rep_vtc = Reparation.objects.filter(vehicule__category__category="VTC",date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+#             rep_vtc_cpte = Reparation.objects.filter(vehicule__category__category="VTC",date_saisie__range=[date_debut, date_fin]).count()
+#             rep_taxi_count = Reparation.objects.filter(vehicule__category__category="TAXI",date_saisie__range=[date_debut, date_fin]).count()
+#             rep_taxi = Reparation.objects.filter(vehicule__category__category="TAXI",date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
+#         else:
+#             autarre_som = Autrarret.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
+#             autarre_cpt = Autrarret.objects.filter(date_saisie__month=date.today().month).count()
+            
+#             vis_all = VisiteTechnique.objects.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
+#             ent_all = Entretien.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
+            
+#             rep_vtc_cpte = Reparation.objects.filter(vehicule__category__category="VTC",date_saisie__month=date.today().month).count()
+#             rep_taxi_count = Reparation.objects.filter(vehicule__category__category="TAXI",date_saisie__month=date.today().month).count()
+#             rep_vtc = Reparation.objects.filter(vehicule__category__category="VTC",date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
+#             rep_taxi = Reparation.objects.filter(vehicule__category__category="TAXI", date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
+            
+#         context={
+#             'dates':dates,
+#             'vehicules':vehicules,
+#             'vis_all':vis_all,
+#             'ent_all':ent_all,
+#             'rep_vtc':rep_vtc,
+#             'rep_taxi':rep_taxi,
+#             'autarre_som':autarre_som,
+#             'autarre_cpt':autarre_cpt,
+#             'rep_vtc_cpte':rep_vtc_cpte,
+#             'rep_taxi_count': rep_taxi_count,
+#             'form':forms,
+#         }
+#         return context
+
 class TempsArretsView(LoginRequiredMixin, CustomPermissionRequiredMixin, TemplateView):
     login_url = 'login'
     permission_url = 'temps_arrets'
     template_name = 'perfect/saisi_temp_arret.html'
-    timeout_minutes = 120
+    timeout_minutes = 500
+
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -3074,7 +3157,6 @@ class TempsArretsView(LoginRequiredMixin, CustomPermissionRequiredMixin, Templat
         annee = date.today().year
         mois = date.today().month
         user = self.request.user
-        # Define the filtering based on user type and gerant_voiture condition
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -3083,16 +3165,14 @@ class TempsArretsView(LoginRequiredMixin, CustomPermissionRequiredMixin, Templat
                 else:
                     vehicules = Vehicule.objects.filter(category__category="TAXI")
             except Gerant.DoesNotExist:
-                vehicules = Vehicule.objects.none()  # No vehicles if no Gerant linked
-        elif user:
-            try:
-                vehicules = Vehicule.objects.all()
-            except:
-                vehicules = Vehicule.objects.none() 
+                vehicules = Vehicule.objects.none()
         else:
-            print("*****ALL*******")
-        
-        libelle_mois= calendar.month_name[mois]
+            vehicules = Vehicule.objects.all()
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
         forms = DateForm(self.request.GET)
         if forms.is_valid():
             date_debut = forms.cleaned_data['date_debut'] 
@@ -3118,22 +3198,24 @@ class TempsArretsView(LoginRequiredMixin, CustomPermissionRequiredMixin, Templat
             rep_taxi_count = Reparation.objects.filter(vehicule__category__category="TAXI",date_saisie__month=date.today().month).count()
             rep_vtc = Reparation.objects.filter(vehicule__category__category="VTC",date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
             rep_taxi = Reparation.objects.filter(vehicule__category__category="TAXI", date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            
-        context={
-            'dates':dates,
-            'vehicules':vehicules,
-            'vis_all':vis_all,
-            'ent_all':ent_all,
-            'rep_vtc':rep_vtc,
-            'rep_taxi':rep_taxi,
-            'autarre_som':autarre_som,
-            'autarre_cpt':autarre_cpt,
-            'rep_vtc_cpte':rep_vtc_cpte,
+
+        context.update({
+            'dates': dates,
+            'vehicules': vehicules, 
+            'vis_all': vis_all,
+            'ent_all': ent_all,
+            'rep_vtc': rep_vtc,
+            'rep_taxi': rep_taxi,
+            'autarre_som': autarre_som,
+            'autarre_cpt': autarre_cpt,
+            'rep_vtc_cpte': rep_vtc_cpte,
             'rep_taxi_count': rep_taxi_count,
-            'form':forms,
-        }
+            'form': forms,
+            'search_query': search_query,  # pour réafficher la recherche
+        })
         return context
-  
+
+
 class SaisiComptaView(LoginRequiredMixin, CustomPermissionRequiredMixin,TemplateView):
     login_url = 'login'
     permission_url = 'saisi_compta'
@@ -3322,8 +3404,7 @@ class AddAutrarretView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
     template_name= "perfect/add_autarret.html"
     success_message = "Autre d'arrêt Ajouté avec succès ✓✓"
     error_message = "Erreur de saisie ✘✘ "
-    # success_url = reverse_lazy('journal_compta')
-    timeout_minutes = 200
+    timeout_minutes = 500
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -3370,29 +3451,36 @@ class AddAutrarretView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         else:
             print("*****ALL*******")
 
+        autarret_queryset = Autrarret.objects.filter(vehicule=vehicule)
         if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
             
-            autarret_result = Autrarret.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_list = Autrarret.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).order_by('-id')
-            autarret_jours = Autrarret.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_mois = Autrarret.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_an = Autrarret.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-        else:
-            autarret_list = Autrarret.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            autarret_result = Autrarret.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_jours = Autrarret.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_mois = Autrarret.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            autarret_an = Autrarret.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            if date_debut and date_fin:
+                autarret_queryset = autarret_queryset.filter(
+                    date_saisie__range=[date_debut, date_fin]
+                )
+
+        autarret_total = autarret_queryset.filter(date_saisie__month=date.today().month).count()
+
+        autarret_jours = autarret_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        autarret_jours_format ='{:,}'.format(autarret_jours).replace('',' ')
+        autarret_mois = autarret_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        autarret_mois_format ='{:,}'.format(autarret_mois).replace('',' ')
+        autarret_an = autarret_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        autarret_an_format ='{:,}'.format(autarret_an).replace('',' ')
+        
+        liste_autarret = autarret_queryset.filter(date_saisie__month=date.today().month).order_by('-id')    
+
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "autarret_result": autarret_result,
-            "autarret_list": autarret_list,
-            "autarret_jours": autarret_jours,
-            "autarret_mois": autarret_mois,
-            "autarret_an": autarret_an,
+            "autarret_total": autarret_total,
+            "autarret_jours_format": autarret_jours_format,
+            "autarret_mois_format": autarret_mois_format,
+            "autarret_an_format": autarret_an_format,
+            "liste_autarret": liste_autarret,
+            
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -4652,11 +4740,11 @@ class ListVisitView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListView)
         if date_debut and date_fin:
             visitech_queryset = visitech_queryset.filter(date_saisie__range=[date_debut, date_fin])
         # ################################----Recettes----#############################
-        visitech_jours = visitech_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        visitech_jours = visitech_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
         visitech_jours_format ='{:,}'.format(visitech_jours).replace('',' ')
         visitech_mois = visitech_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
         visitech_mois_format ='{:,}'.format(visitech_mois).replace('',' ')
-        visitech_an = visitech_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        visitech_an = visitech_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
         visitech_an_format ='{:,}'.format(visitech_an).replace('',' ')
         liste_visitech = visitech_queryset
 
@@ -4830,7 +4918,7 @@ class AddReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Creat
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
-        form = DateForm(self.request.GET)
+        form = DateFormRepar(self.request.GET)
         forms = self.get_form()
         user = self.request.user
         if self.request.POST:
@@ -4855,29 +4943,41 @@ class AddReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Creat
                 vehicules = Vehicule.objects.none() 
         else:
             print("*****ALL*******")
+        reparat_queryset = Reparation.objects.filter(vehicule=vehicule)
         if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            repare_result = Reparation.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_list = Reparation.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).order_by('-id')
-            repare_jours = Reparation.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_mois = Reparation.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_an = Reparation.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-        else:
-            repare_list = Reparation.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            repare_result = Reparation.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_jours = Reparation.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_mois = Reparation.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            repare_an = Reparation.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+            motif_filter = self.request.GET.get('motif') 
+            
+            if date_debut and date_fin:
+                reparat_queryset = reparat_queryset.filter(
+                    date_saisie__range=[date_debut, date_fin]
+                )
+
+            if motif_filter:
+                reparat_queryset = reparat_queryset.filter(motif=motif_filter)
+
+        # Calculs
+        reparat_total = reparat_queryset.filter(date_saisie__month=date.today().month).count()
+        reparat_jours = reparat_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_jours_format ='{:,}'.format(reparat_jours).replace('',' ')
+        reparat_mois = reparat_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_mois_format ='{:,}'.format(reparat_mois).replace('',' ')
+        reparat_an = reparat_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_an_format ='{:,}'.format(reparat_an).replace('',' ')
+        
+        liste_reparat = reparat_queryset.order_by('-id')
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
             "piece_formset": piece_formset,
-            "repare_result": repare_result,
-            "repare_list": repare_list,
-            "repare_jours": repare_jours,
-            "repare_mois": repare_mois,
-            "repare_an": repare_an,
+            "liste_reparat": liste_reparat,
+            
+            "reparat_total": reparat_total,
+            "reparat_jours_format": reparat_jours_format,
+            "reparat_mois_format": reparat_mois_format,
+            "reparat_an_format": reparat_an_format,
+
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -4885,19 +4985,43 @@ class AddReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Creat
             'forms': forms,
         }
         return context
+    
     def form_valid(self, form):
-        context=self.get_context_data()
-        piece_formset=context['piece_formset']
-        form.instance.vehicule_id=self.kwargs['pk']
+        context = self.get_context_data()
+        piece_formset = context['piece_formset']
+        # Associer véhicule et auteur AVANT la validation finale
+        form.instance.vehicule_id = self.kwargs['pk']
+        form.instance.auteur = self.request.user  
+
         if form.is_valid() and piece_formset.is_valid():
-            self.object=form.save()
-            piece_formset.instance=self.object
+            self.object = form.save(commit=False)
+            total_pieces = 0
+            for piece_form in piece_formset:
+                piece = piece_form.save(commit=False)
+                if piece.libelle:  # éviter les formulaires vides
+                    piece.auteur = self.request.user  
+                    piece.reparation = self.object
+                    total_pieces += (piece.montant or 0) * (piece.quantite or 1)
+
+            # calcul du montant total
+            prestation = form.cleaned_data.get("prestation", 0)
+            self.object.montant = total_pieces + prestation
+            self.object.save()
+            # maintenant on rattache les pièces à la réparation
+            piece_formset.instance = self.object
             piece_formset.save()
+
             messages.success(self.request, self.success_message)
             return redirect(self.get_success_url())
         else:
             return self.form_invalid(form)
     def form_invalid(self, form):
+        context = self.get_context_data()
+        piece_formset = context['piece_formset']
+        print("=== ERREURS REPARATION ===")
+        print(form.errors)
+        print("=== ERREURS PIECES ===")
+        print(piece_formset.errors)
         messages.error(self.request, self.error_message)
         return super().form_invalid(form)
     def get_success_url(self):
@@ -5066,6 +5190,8 @@ class DetailReparatView(LoginRequiredMixin, CustomPermissionRequiredMixin, Detai
         mois = date.today().month
         mois_en_cours =date.today().month
         reparation = get_object_or_404(Reparation, pk=self.kwargs['pk'])
+        list_piece= reparation.pieces.all()
+
         # reparations  = self.get_object()
         vehicule = reparation.vehicule
         user = self.request.user
@@ -5106,7 +5232,7 @@ class DetailReparatView(LoginRequiredMixin, CustomPermissionRequiredMixin, Detai
         # list_reparation = Reparation.objects.filter(vehicule=vehicule)
         ################################----Pieces----#############################
         total_piece= Piece.objects.filter(reparation = reparation,).aggregate(somme=Sum('montant'))['somme'] or 0
-        list_piece= Piece.objects.filter(reparation = reparation,)
+        
         
         context={
             'reparation':reparation,
@@ -5180,6 +5306,7 @@ class ListReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, List
     ordering = ['date_saisie']
     context_object = 'listereparation'
     timeout_minutes = 300
+    form_class = DateFormMJR
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -5189,63 +5316,48 @@ class ListReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, List
                 messages.warning(request, "Vous avez été déconnecté ")
                 return redirect("login")
         return super().dispatch(request, *args, **kwargs)
+    # Reparation
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         dates = date.today()
         annee = date.today().year
         mois = date.today().month
-        
-        libelle_mois= calendar.month_name[mois]
-        forms = DateForm(self.request.GET)
-        if forms.is_valid():
-            date_debut = forms.cleaned_data['date_debut'] 
-            date_fin = forms.cleaned_data['date_fin']
-            reparat_all = Reparation.objects.filter(date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_all_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_all_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour = Reparation.objects.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_vtc = Reparation.objects.filter(vehicule__category__category='VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_taxi = Reparation.objects.filter(vehicule__category__category='TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_all = Reparation.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_an_fil_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC', date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_an_fil_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI', date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0
-            list_reparat = Reparation.objects.filter(date_saisie__range=[date_debut, date_fin]).order_by('-id')
-        else:
-            reparat_all = Reparation.objects.filter(date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_all_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_all_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour = Reparation.objects.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_vtc = Reparation.objects.filter(vehicule__category__category='VTC',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_jour_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI',date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_taxi = Reparation.objects.filter(vehicule__category__category='TAXI',date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_mois_all = Reparation.objects.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_an_fil_vtc = Reparation.objects.filter(vehicule__category__category = 'VTC', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            reparat_an_fil_taxi = Reparation.objects.filter(vehicule__category__category = 'TAXI', date_saisie__month=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
-            list_reparat = Reparation.objects.filter(date_saisie__month=date.today().month).order_by('-id')
-            
+        reparat_queryset = Reparation.objects.all()
+        form = self.form_class(self.request.GET)
+        if form.is_valid():
+            categorie_filter = form.cleaned_data.get('categorie')
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if categorie_filter:
+            reparat_queryset = reparat_queryset.filter(vehicule__category__category=categorie_filter)
+
+        if date_debut and date_fin:
+            reparat_queryset = reparat_queryset.filter(date_saisie__range=[date_debut, date_fin])
+        # ################################----Recettes----#############################
+
+        reparat_total = reparat_queryset.filter(date_saisie__month=date.today().month).count()
+        reparat_jours = reparat_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_jours_format ='{:,}'.format(reparat_jours).replace('',' ')
+        reparat_mois = reparat_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_mois_format ='{:,}'.format(reparat_mois).replace('',' ')
+        reparat_an = reparat_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        reparat_an_format ='{:,}'.format(reparat_an).replace('',' ')
+        liste_reparat = reparat_queryset
+
         context={
-            'form':forms,
+            'liste_reparat':liste_reparat,
+            'reparat_total':reparat_total,
+            'reparat_an_format':reparat_an_format,
+            'reparat_mois_format':reparat_mois_format,
+            'reparat_jours_format':reparat_jours_format,
             'dates':dates,
-            'libelles_mois':libelle_mois,
             'annees':annee,
-            'reparat_all':reparat_all,       
-            'reparat_all_taxi':reparat_all_taxi,
-            'reparat_all_vtc':reparat_all_vtc ,
-            'reparat_jour':reparat_jour   ,   
-            'reparat_jour_vtc':reparat_jour_vtc,
-            'reparat_mois_vtc':reparat_mois_vtc,  
-            'reparat_jour_taxi':reparat_jour_taxi, 
-            'reparat_mois_taxi':reparat_mois_taxi, 
-            'reparat_mois_all':reparat_mois_all,      
-            'reparat_an_fil_vtc':reparat_an_fil_vtc  ,  
-            'reparat_an_fil_taxi':reparat_an_fil_taxi ,  
-            'list_reparat':list_reparat   ,              
-            
-            }
-        return context 
+            'form':form,
+        }
+        return context
+
+ 
          
 class AddEntretienView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateView):
     login_url = 'login'
