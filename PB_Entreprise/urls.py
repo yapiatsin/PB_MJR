@@ -53,7 +53,7 @@ urlpatterns = [
     path('vehicules /delete-multiple/', delete_multiple_vehicules, name='delete_multiple_vehicules'),
 
     #-------------------------------------------------------Recette---------------------------------------------
-    path('vehicule /<int:pk>/recette', AddRecetteView.as_view(), name="add_recettes"),
+    path('vehicule /<int:pk>/ recette', AddRecetteView.as_view(), name="add_recettes"),
     path('liste recette',ListRecetView.as_view(), name="list_recet"),
     path('recette /<int:pk>/ modifier', UpdateRecetView.as_view(), name="updat_recet"),
     path('recette /<int:pk>/ delet', delete_recette, name='delete_recets'),
@@ -64,7 +64,7 @@ urlpatterns = [
     path('charge fixe /<int:pk>/ delet', delete_charg_fixe, name='delete_chargfix'),
     path('liste charge fixe',ListChargeFixView.as_view(), name="list_charg_fix"),
 
-    path('vehicule /<int:pk>/charg_var',AddChargeVarView.as_view(), name="addcharg_var"),
+    path('vehicule /<int:pk>/ charg_var',AddChargeVarView.as_view(), name="addcharg_var"),
     path('charge variable /<int:pk>/ modifier',UpdateChargeVarView.as_view(), name="updat_charg_var"),
     path('charge variable /<int:pk>/ delet', delete_charg_var, name='delete_chargvar'),
     path('liste charge variable',ListChargeVarView.as_view(), name="list_charg_var"),

@@ -1,15 +1,63 @@
 {% extends 'perfect/base.html' %} 
 {% load static %} 
 {% block title %} Temps d'arrêt {% endblock title %} 
-{% block navbar_nav %}
-
-{% endblock navbar_nav %} 
+{% block page_action %}
+    <a class="nav-link" data-toggle="modal" data-target="#modal-sm" style="font-size: 18px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700;">filtre
+        <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
+    </a>
+{% endblock page_action %}
 {% block page_title %}
-<img class="profile-user-img" style="border:none; height:45px;width:45px" src="{% static 'temp_arret.png' %}" alt="User profile picture">Temps d'arrêt {% endblock page_title %} 
-{% block page_a %} 
-{% endblock page_a %} 
-{% block active_page %}Temps d'arrêt{% endblock active_page %} 
+<img class="profile-user-img" style="border:none; height:45px;width:45px" src="{% static 'temp_arret.png' %}" alt="User profile picture">Temps d'arrêt 
+{% endblock page_title %} 
+
 {% block main_content%}
+
+<div class="modal fade" id="modal-sm">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius:25px;">
+            <div class="modal-header">
+                <h4 class="modal-title" style="font-weight:700;color: #06497C;">FILTRE</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="card-body">
+                    <form id="basic-form" method="get" novalidate>
+                        <div class="row clearfix">
+                            <div class="col-md-12 form-group"><input type="text" value="Critère de filtre" class="form-control text-center" disabled></div>
+                            <div class="col-6">
+                                <label>Date debut </label>
+                                <div class="form-group">                                    
+                                    {{ form.date_debut }}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label>Date fin</label>
+                                <div class="form-group">                                    
+                                    {{ form.date_fin }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label>Categorie</label>
+                                <div class="form-group">                                    
+                                    {{ form.categorie }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                            <a href="{% url 'temps_arrets' %}" class="btn btn-outline-info"><i class="fas fa-refresh"></i></a>
+                            <button type="submit" class="btn btn-outline-success" >Afficher</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="col-12 col-sm-6 col-md-3">
     <div class="info-box" style="border-radius:25px;">
@@ -19,8 +67,8 @@
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Visites</span>
             <span class="info-box-number" style="font-size:20px;">
-            {{autarret_total}}
-            <small></small>
+            {{visit_mois_format}}
+            <small>frs cfa</small>
             </span>
         </div>
     </div>
@@ -32,7 +80,7 @@
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Entretiens</span>
             <span class="info-box-number" style="font-size:20px;">
-            {{autarret_jours_format}}
+            {{entretien_mois_format}}
             <small>frs cfa</small>
             </span>
         </div>
@@ -62,7 +110,7 @@
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Autres arrêts</span>
             <span class="info-box-number" style="font-size:20px;">
-            {{autarret_an_format}}
+            {{autarret_mois_format}}
             <small>frs cfa</small>
             </span>
         </div>
@@ -83,7 +131,6 @@
                                     <form class="search-form">
                                         <div class="input-group">
                                             <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Saisissez l'immatriculation du véhicule..." style="border-radius: 50px 0 0 50px;">
-                            
                                             <div class="input-group-append">
                                             <button type="submit" name="submit" class="btn btn-danger" style="border-radius: 0 "><i class="fas fa-search"></i>
                                             </button>
@@ -91,111 +138,74 @@
                                             </div>
                                         </div>
                                     </form>
-
-                                    {% comment %} <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-                                    </div> {% endcomment %}
                                 </div>
                                 <!-- /.card-header -->
                                 <div class="card-body">
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                     {% if vehicules %}
                                         {% for v in vehicules %}
-                                            {% comment %} <div class="card" style="border-radius:25px;">
-                                                <div class="card-header justify-content-between">
-                                                    <h3 class="card-title">
-                                                        {{v.immatriculation}} - 
-                                                        <b>{{v.category.category}}</b>
-                                                    </h3>
-                                                </div>
-                                                <div class="card-body">
-                                                    <i style="font-size: 120px; color:rgba(114, 115, 116, 0.24); position: relative; text-align: center;" class="fas fa-car text-center"></i>
-                                                    <div class="btn-group" style="width: 100%; margin-bottom: 10px;">
-                                                        <ul class="fc-color-picker" id="coor-chooser" style="position: absolute;">
-                                                            <div style="margin-top: -140px; margin-left:200px">
-                                                                {% for categorie, perms in grouped_permissions.items %}
-                                                                    {% if categorie.categorie == "permvisit" %}
-                                                                        {% for perm in perms %}
-                                                                            {% if perm.name == "add visite" %}
-                                                                                <a href="{% url perm.url v.pk %}" class="btn btn-outline-primary" title="Ajouter une visite">
-                                                                                    <i class="fas fa-plus-circle">Visite</i>
-                                                                                </a>
-                                                                            {% endif %}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            </div>
-                                                            <div style="margin-top: 5px; margin-left:200px">
-                                                                {% for categorie, perms in grouped_permissions.items %}
-                                                                    {% if categorie.categorie == "permentretien" %}
-                                                                        {% for perm in perms %}
-                                                                            {% if perm.name == "add entretien" %}
-                                                                                <a href="{% url perm.url v.pk %}" class="btn btn-outline-warning"  title="Ajouter une entretien">
-                                                                                    <i style="font-size: 20px;" class="fa fa-plus-circle ">Entretien</i>
-                                                                                </a>
-                                                                            {% endif %}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            </div>
-                                                            <div style="margin-top: 5px; margin-left:200px">
-                                                                {% for categorie, perms in grouped_permissions.items %}
-                                                                    {% if categorie.categorie == "permreparation" %}
-                                                                        {% for perm in perms %}
-                                                                            {% if perm.name == "add reparation" %}
-                                                                                <a href="{% url perm.url v.pk %}" class="btn btn-outline-success" title="Ajouter une réparation">
-                                                                                    <i style="font-size: 20px;" class="fa fa-plus-circle ">Réparation</i>
-                                                                                </a>
-                                                                            {% endif %}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            </div>
-                                                            <div style="margin-top: 5px; margin-left:200px; width: 100%;">
-                                                                {% for categorie, perms in grouped_permissions.items %}
-                                                                    {% if categorie.categorie == "permarret" %}
-                                                                        {% for perm in perms %}
-                                                                            {% if perm.name == "add autre arrêt" %}
-                                                                                <a href="{% url perm.url v.pk %}" class="btn btn-outline-secondary" title="Ajouter une autre arrêt">
-                                                                                    <i style="font-size: 20px;" class="fa fa-plus-circle">Autre-arrêt</i>
-                                                                                </a>
-                                                                            {% endif %}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            </div>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div> {% endcomment %}
-
-                                            <div class="card card-widget widget-user-2" style="border-radius:25px; ">
+                                            <div class="card card-widget widget-user" style="border-radius:25px; ">
                                                 <div class="widget-user-header" style="border-radius:25px;">
-                                                  
-                                                  <h3 class="widget-user-username">IMMAT: {{v.immatriculation}}</h3>
-                                                  <h5 class="widget-user-desc">Categorie: {{v.category.category}}</h5>
+                                                    <i class="fa fa-car text-center" style="font-size: 50px; color:rgba(139, 139, 139, 0.39);"></i>
+                                                  <h5 class="widget-user-desc">{{v.immatriculation}}</h5>
                                                 </div>
                                                 <div class="card-footer p-0">
                                                   <ul class="nav flex-column">
                                                     <li class="nav-item">
-                                                      <a href="#" class="nav-link">
-                                                        Projects <span class="float-right badge bg-primary">31</span>
-                                                      </a>
+                                                        {% for categorie, perms in grouped_permissions.items %}
+                                                            {% if categorie.categorie == "permvisit" %}
+                                                                {% for perm in perms %}
+                                                                    {% if perm.name == "add visite" %}
+                                                                        <a href="{% url perm.url v.pk %}" class="nav-link" title="Ajouter une visite">
+                                                                            Visite technique
+                                                                            <span class="float-right badge bg-primary"><i style="font-size: 20px;" class="fa fa-plus-circle"></i></span>
+                                                                        </a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        {% endfor %}
                                                     </li>
                                                     <li class="nav-item">
-                                                      <a href="#" class="nav-link">
-                                                        Tasks <span class="float-right badge bg-info">5</span>
-                                                      </a>
+                                                        {% for categorie, perms in grouped_permissions.items %}
+                                                            {% if categorie.categorie == "permentretien" %}
+                                                                {% for perm in perms %}
+                                                                    {% if perm.name == "add entretien" %}
+                                                                        <a href="{% url perm.url v.pk %}" class="nav-link" title="Ajouter un entretien">
+                                                                            Entretien
+                                                                            <span class="float-right badge bg-info"><i style="font-size: 20px;" class="fa fa-plus-circle"></i></span>
+                                                                        </a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        {% endfor %}
                                                     </li>
                                                     <li class="nav-item">
-                                                      <a href="#" class="nav-link">
-                                                        Completed Projects <span class="float-right badge bg-success">12</span>
-                                                      </a>
+                                                        {% for categorie, perms in grouped_permissions.items %}
+                                                            {% if categorie.categorie == "permreparation" %}
+                                                                {% for perm in perms %}
+                                                                    {% if perm.name == "add reparation" %}
+                                                                        <a href="{% url perm.url v.pk %}" class="nav-link" title="Ajouter un réparation">
+                                                                            Réparation
+                                                                            <span class="float-right badge bg-success"><i style="font-size: 20px;" class="fa fa-plus-circle"></i></span>
+                                                                        </a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        {% endfor %}
                                                     </li>
                                                     <li class="nav-item">
-                                                      <a href="#" class="nav-link">
-                                                        Followers <span class="float-right badge bg-danger">842</span>
-                                                      </a>
+                                                        {% for categorie, perms in grouped_permissions.items %}
+                                                            {% if categorie.categorie == "permarret" %}
+                                                                {% for perm in perms %}
+                                                                    {% if perm.name == "add autre arrêt" %}
+                                                                        <a href="{% url perm.url v.pk %}" class="nav-link" title="Ajouter un autre arrêt">
+                                                                            Autre arrêt
+                                                                            <span class="float-right badge bg-secondary"><i style="font-size: 20px;" class="fa fa-plus-circle"></i></span>
+                                                                        </a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        {% endfor %}
                                                     </li>
                                                   </ul>
                                                 </div>
@@ -206,7 +216,6 @@
                                         <p>Aucun véhicule trouvé.</p>
                                     {% endif %}
                                     </div>
-                                    
                                 </div>
                             </div>
                         </div>
@@ -217,105 +226,3 @@
     </div>
 </div>
 {% endblock main_content %}
-
-
-{% comment %} <div class="col-md-12">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="" style="border-radius:20px">
-                <div id="" class="">
-                    <div class="row p-0 m-0">
-                        <div class="col-md-12 p-0">
-                            <div class="card" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);backdrop-filter: blur(5.2px);--webkit-backdrop-filter: blur(5.2px);">
-                                <div class="card-header">
-                                    <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-                                    </div>
-                                </div>
-                                <!-- /.card-header -->
-                                <div class="card-body">
-                                    <table id="example1" class="table table-bordered table-striped">
-                                        <thead>
-                                            <tr class=" text-center text-danger ">
-                                                <th>IMMAT</th>
-                                                <th>MARQUE</th>
-                                                <th>CATEGORIE</th>
-                                                <th>VISITE</th>
-                                                <th>ENTRETIEN</th>
-                                                <th>REPARATION</th>
-                                                <th>AUTRES</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% if vehicules %} 
-                                                {% for u in vehicules %}
-                                                    <tr class="text-center">
-                                                        <td><a href="{% url 'dashgaragcar' u.pk %}" title="Cliquez pour accéder à son tableau de bord garage" class="mr-3 text-primary" style='font-weight:700'>{{u.immatriculation}}</a></td>
-                                                        <td>{{u.marque}}</td>
-                                                        <td>{{u.category}}</td>
-                                                        <td>
-                                                            {% for categorie, perms in grouped_permissions.items %}
-                                                                {% if categorie.categorie == "permvisit" %}
-                                                                    {% for perm in perms %}
-                                                                        {% if perm.name == "add visite" %}
-                                                                            <a href="{% url perm.url u.pk %}" class="text-primary">
-                                                                                <i style="font-size: 20px;" class="fa fa-plus-circle "></i>
-                                                                            </a>
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </td>
-                                                        <td>
-                                                            {% for categorie, perms in grouped_permissions.items %}
-                                                                {% if categorie.categorie == "permentretien" %}
-                                                                    {% for perm in perms %}
-                                                                        {% if perm.name == "add entretien" %}
-                                                                            <a href="{% url perm.url u.pk %}" class="text-primary">
-                                                                                <i style="font-size: 20px;" class="fa fa-plus-circle "></i>
-                                                                            </a>
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </td>
-                                                        <td>
-                                                            {% for categorie, perms in grouped_permissions.items %}
-                                                                {% if categorie.categorie == "permreparation" %}
-                                                                    {% for perm in perms %}
-                                                                        {% if perm.name == "add reparation" %}
-                                                                            <a href="{% url perm.url u.pk %}" class="text-primary">
-                                                                                <i style="font-size: 20px;" class="fa fa-plus-circle "></i>
-                                                                            </a>
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </td>
-                                                        <td>
-                                                            {% for categorie, perms in grouped_permissions.items %}
-                                                                {% if categorie.categorie == "permarret" %}
-                                                                    {% for perm in perms %}
-                                                                        {% if perm.name == "add autre arrêt" %}
-                                                                            <a href="{% url perm.url u.pk %}" class="text-primary">
-                                                                                <i style="font-size: 20px;" class="fa fa-plus-circle "></i>
-                                                                            </a>
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> {% endcomment %}
