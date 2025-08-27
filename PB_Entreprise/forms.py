@@ -35,6 +35,20 @@ class DateFormRepar(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+class DateFormListRepar(forms.Form):
+    date_debut = forms.DateField(widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}), required=False)
+    date_fin = forms.DateField(widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}), required=False)
+    motif = forms.ChoiceField(
+        choices=[('', '--- Tous les motifs ---')] + list(MOTIF_REPARATION),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    categorie = forms.ModelChoiceField(
+        queryset=CategoVehi.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
 class CategorieForm(forms.ModelForm):
     class Meta:
         model = CategoVehi

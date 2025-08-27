@@ -6,7 +6,7 @@
 {% endblock navbar_nav %} 
 
 {% block page_title %}
-    <img class="profile-user-img" style="border:none; height:50px;width:50px" src="{% static 'dash.png' %}" alt="User profile picture">Tableau de bord 
+    <img class="profile-user-img" style="border:none; height:55px;width:55px" src="{% static 'dash.png' %}" alt="User profile picture">Tableau de bord 
 {% endblock page_title %} 
 
 {% block page_action %}
@@ -18,48 +18,46 @@
 {% block main_content%}
 
 <div class="modal fade" id="modal-sm">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content" style="border-radius:25px;">
             <div class="modal-header">
-                <h4 class="modal-title" style="font-weight:700;color: #06497C;">FILTRE</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h4 class="modal-title" style="font-weight:700;color: #06497C; font-size:15px;">FILTRE</h4>
+                <button type="button" style="border-radius:25px;" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-
             <div class="modal-body">
                 <div class="card-body">
                     <form id="basic-form" method="get" novalidate>
                         <div class="row clearfix">
-                            <div class="col-md-12 form-group"><input type="text" value="Critère de filtre" class="form-control text-center" disabled></div>
-                            <div class="col-6">
-                                <label>Date debut </label>
+                            <div class="col-12">
+                                <label style="font-weight:700;color:rgba(152, 152, 152, 0.85); font-size:15px;">Date debut </label>
                                 <div class="form-group">                                    
                                     {{ form.date_debut }}
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <label>Date fin</label>
+                            <div class="col-12">
+                                <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Date fin</label>
                                 <div class="form-group">                                    
                                     {{ form.date_fin }}
                                 </div>
                             </div>
+                            
                             <div class="col-12">
-                                <label>Categorie</label>
+                                <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Categorie</label>
                                 <div class="form-group">                                    
                                     {{ form.categorie }}
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
-                            <a href="{% url 'Tbd' %}" class="btn btn-outline-info">Actualiser</a>
-                            <button type="submit" class="btn btn-outline-success" >Afficher</button>
+                            <button type="button" class="btn btn-outline-secondary" style="border-radius:25px;" data-dismiss="modal">Annuler</button>
+                            <a href="{% url 'Tbd' %}" class="btn btn-outline-info" style="border-radius:25px;"><i class="fa fa-refresh"></i></a>
+                            <button type="submit" class="btn btn-outline-success" style="border-radius:25px;">Afficher</button>
                         </div>
                     </form>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -109,36 +107,22 @@
                             <div class="col-md-2">
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 4px;" src="{% static 'vtc.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px; margin-left: 4px;" src="{% static 'recet.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                         <div style="font-size: 15px;color: #06497C">Recette</div>
                                             <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">
-                                                {{ total_recette_vtc_format }}
+                                                {{ total_recette_format }}
                                                 <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                {% comment %} <td style="border: none;">
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 6px; margin-left: 0px;" src="{% static 'taxi.png' %}" alt="" srcset="">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 15px;color: #06497C">Recette TAXI</div>
-                                            <div style="font-size:18px; font-weight: 700; line-height: 1; color: #fa7832;">
-                                                {{ total_recette_taxi_format }}
-                                                <small style="color: #06497C; font-weight: 700; line-height: 1;"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td> {% endcomment %}
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 8px; margin-left: 3px;" src="{% static 'marge.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 10px; margin-left: 3px;" src="{% static 'marge.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div style="font-size: 15px;color: #06497C">Marge de contribution</div>
@@ -151,8 +135,8 @@
                                 </td>
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 7px;" src="{% static 'brute.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px; margin-left: 7px;" src="{% static 'brute.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div style="font-size: 15px;color: #06497C">Marge Brute</div>
@@ -165,8 +149,8 @@
                                 </td>
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px;margin-left: 0px;" src="{% static 'chargfix.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px;margin-left: 0px;" src="{% static 'chargfix.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div style="font-size: 15px;color: #06497C">Charges Fixes</div>
@@ -176,8 +160,8 @@
                                 </td>
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'chargfvar.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'chargvar.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div style="font-size: 15px; color: #06497C">Charges Variables</div>
@@ -190,8 +174,8 @@
                                 </td>
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 30px; width: 30px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'sum.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 8px; margin-left: 0px;" src="{% static 'sum.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                         <div style="font-size: 15px; color: #06497C">Charges Totales</div>
@@ -205,8 +189,8 @@
                                 
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'gear.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px; margin-left: 0px;" src="{% static 'gear.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div class="mt-1" style="font-size:14px; font-weight: 700; line-height: 1;color: #06497C">Pièces réparations</div>
@@ -219,8 +203,8 @@
                                 </td>
                                 <td style="border: none;">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 50px; width: 50px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
-                                            <img style="height: 35px; width: 35px; position:relative; margin-top: 9px; margin-left: 2px;" src="{% static 'update.png' %}" alt="" srcset="">
+                                        <div style="height: 55px; width: 55px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-3 text-center">
+                                            <img style="height: 40px; width: 40px; position:relative; margin-top: 9px; margin-left: 2px;" src="{% static 'update.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
                                             <div style="font-size: 15px; color: #06497C">Pièces changes</div>
@@ -252,7 +236,7 @@
                             <div class="row mt-2">
                                 <div class="col-md-12">
                                     <div style="display: flex; align-items: center;">
-                                        <div style="height: 40px; width: 40px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-1 text-center">
+                                        <div style="height: 40px; width: 40px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-1 text-center">
                                             <img style="height: 25px; width: 25px; position:relative; margin-top: 8px;" src="{% static 'portefeuille.png' %}" alt="" srcset="">
                                         </div>
                                         <div>
@@ -281,7 +265,7 @@
 
                                 <div class="col-md-12">
                                     <div style="display: flex;">
-                                        <div style="height: 40px; width: 40px; background-color: #f4f6f9; border-radius: 50px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-1 text-center">
+                                        <div style="height: 40px; width: 40px; background-color: #f4f6f9; border-radius: 55px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;" class="mr-1 text-center">
                                             <img style="height: 25px; width: 25px; position:relative; margin-top: 8px;" src="{% static 'recet.png' %}" alt="" srcset="">
                                         </div>
                                         <div>

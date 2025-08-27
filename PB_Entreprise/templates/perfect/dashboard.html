@@ -29,7 +29,7 @@
                         <thead>
                             <tr class=" text-center text-danger ">
                                 <th>IMMATRICULATION</th>
-                                <th>MARQUE-CATEGORIE</th>
+                                <th>CATEGORIE</th>
                             </tr>
                         </thead>
                         <tbody> 
@@ -37,7 +37,7 @@
                                 {% for u in vehicules %}
                                     <tr class="text-center">
                                         <td><a href="{% url 'detavehi' u.pk %}" class="mr-3 text-primary">{{u.immatriculation}}</a></td>
-                                        <td>{{u.immatriculation}}-{{u.category}}</td>
+                                        <td>{{u.category}}</td>
                                     </tr>
                                 {% endfor %} 
                             {% endif %}

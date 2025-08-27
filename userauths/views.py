@@ -61,7 +61,6 @@ def edit_user_permissions(request, user_id):
     })
 
 def generate_random_password(length=8):
-    # characters = string.ascii_letters + string.digits #+ string.punctuation
     characters = string.ascii_letters + string.digits 
     return ''.join(random.choice(characters) for i in range(length))
 
@@ -143,8 +142,6 @@ def delete_admin(request, pk):
 def add_chefexploit(request):
     user=request.user
     try:
-        # admins = Administ.objects.get(user=user)
-        # chefexp = Chefexploitation.objects.select_related('user',).filter(create_by=admins)
         chefexp = Chefexploitation.objects.all()
     except Administ.DoesNotExist:
         chefexp = Chefexploitation.objects.none()
@@ -413,16 +410,16 @@ def loginview(request):
                 login(request, user)
                 user_type=user.user_type
                 if user_type == '1':
-                    messages.success(request, f"Bienvenue Administrateur")
+                    messages.success(request, f"Bienvenue Administrateur {user.username}")
                     return redirect('dash')
                 elif user_type == '2':
-                    messages.success(request, "Bienvenue Chef d'exploitation")
+                    messages.success(request, f"Bienvenue Chef d'exploitation {user.username}")
                     return redirect('dash')
                 elif user_type == '3':
-                    messages.success(request, "Bienvenue Comptable")
+                    messages.success(request, f"Bienvenue Comptable {user.username}")
                     return redirect('dash')
                 elif user_type == '4':
-                    messages.success(request,  "Bienvenue Gérant")
+                    messages.success(request,  f"Bienvenue Gérant {user.username}")
                     return redirect('dashgarage')
                 else:
                    return redirect('login')
@@ -433,8 +430,9 @@ def loginview(request):
     return render(request, "perfect/logins.html")
 
 def logout_view(request):
+    user=request.user
     logout(request)
-    messages.success(request, "Vous êtes deconnecté.")
+    messages.success(request, f"Vous êtes deconnecté {user.username}")
     return redirect("home")
 
 def interneView(request):

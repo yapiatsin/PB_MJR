@@ -1416,7 +1416,7 @@ class DashboardMView(TemplateView):
             })
 
         context={
-            'tot_recets':total_recette_format,
+            'total_recette_format':total_recette_format,
             "datasets_json": json.dumps(datasets),
             "jours_semaine" : jours_semaine,
             
@@ -3320,9 +3320,11 @@ class AddRecetteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateVi
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        recette_queryset = Recette.objects.filter(vehicule=vehicule)
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -3340,34 +3342,34 @@ class AddRecetteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateVi
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            recets_result = Recette.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_list = Recette.objects.filter(vehicule=vehicule, date_saisie__range=[date_debut, date_fin]).order_by('-id')
-            recets_jours = Recette.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_mois = Recette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_an = Recette.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-           
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            recets_list = Recette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            recets_result = Recette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_jours = Recette.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_mois = Recette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            recets_an = Recette.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            vehicules = Vehicule.objects.none()
+
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            recette_queryset = recette_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        recette_jours = recette_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        recette_jours_format ='{:,}'.format(recette_jours).replace('',' ')
+        recette_mois = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recette_mois_format ='{:,}'.format(recette_mois).replace('',' ')
+        recette_an = recette_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        recette_an_format ='{:,}'.format(recette_an).replace('',' ')
+        liste_recette = recette_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "recets_result": recets_result,
-            "recets_list": recets_list,
-            "recets_jours": recets_jours,
-            "recets_mois": recets_mois,
-            "recets_an": recets_an,
-            'dates': dates,
-            'mois': libelle_mois,
-            'annee': annee,
+            "recette_jours_format": recette_jours_format,
+            "recette_mois_format": recette_mois_format,
+            "recette_an_format": recette_an_format,
+            "liste_recette": liste_recette,
             'form': form,
             'forms': forms,
         }   
@@ -3429,6 +3431,12 @@ class AddAutrarretView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
                 vehicules = Vehicule.objects.none() 
         else:
             print("*****ALL*******")
+        
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
 
         autarret_queryset = Autrarret.objects.filter(vehicule=vehicule)
         if form.is_valid():
@@ -3562,16 +3570,14 @@ class ListRecetView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListView)
             recette_queryset = recette_queryset.filter(date_saisie__range=[date_debut, date_fin])
 
         # ################################----Recettes----#############################
-        recettes_jours = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recettes_jours = recette_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
         recettes_jours_format ='{:,}'.format(recettes_jours).replace('',' ')
-
         recettes_mois = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
         recettes_mois_format ='{:,}'.format(recettes_mois).replace('',' ')
-
-        recettes_an = recette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        recettes_an = recette_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
         recettes_an_format ='{:,}'.format(recettes_an).replace('',' ')
 
-        liste_rec = recette_queryset
+        liste_rec = recette_queryset.filter(date_saisie__month=date.today().month)
         context={
             'liste_rec':liste_rec,
             
@@ -3642,7 +3648,6 @@ class AddChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
     template_name= "perfect/add_charg_fixe.html"
     success_message = 'Charge fixe Ajoutée avec succès ✓✓'
     error_message = "Erreur de saisie ✘✘ "
-    # success_url = reverse_lazy('journal_compta')
     timeout_minutes = 500
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
@@ -3670,9 +3675,11 @@ class AddChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        chargfixe_queryset = ChargeFixe.objects.filter(vehicule=vehicule)
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -3690,30 +3697,35 @@ class AddChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            chargfix_result = ChargeFixe.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_list = ChargeFixe.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            chargfix_jours = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_mois = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_an = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0 
-           
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            chargfix_list = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            chargfix_result = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_jours = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_mois = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargfix_an = ChargeFixe.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
+            vehicules = Vehicule.objects.none()
+
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            chargfixe_queryset = chargfixe_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        chargfixe_jours = chargfixe_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargfixe_jours_format ='{:,}'.format(chargfixe_jours).replace('',' ')
+        chargfixe_mois = chargfixe_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargfixe_mois_format ='{:,}'.format(chargfixe_mois).replace('',' ')
+        chargfixe_an = chargfixe_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargfixe_an_format ='{:,}'.format(chargfixe_an).replace('',' ')
+        liste_chargfixe = chargfixe_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "chargfix_result": chargfix_result,
-            "chargfix_list": chargfix_list,
-            "chargfix_jours": chargfix_jours,
-            "chargfix_mois": chargfix_mois,
-            "chargfix_an": chargfix_an,
+            "chargfixe_jours_format": chargfixe_jours_format,
+            "chargfixe_mois_format": chargfixe_mois_format,
+            "chargfixe_an_format": chargfixe_an_format,
+            "liste_chargfixe": liste_chargfixe,
+            
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -3760,13 +3772,13 @@ class ListChargeFixView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListV
         if date_debut and date_fin:
             chargefix_queryset = chargefix_queryset.filter(date_saisie__range=[date_debut, date_fin])
         # ################################----Recettes----#############################
-        chargefix_jours = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargefix_jours = chargefix_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
         chargefix_jours_format ='{:,}'.format(chargefix_jours).replace('',' ')
         chargefix_mois = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
         chargefix_mois_format ='{:,}'.format(chargefix_mois).replace('',' ')
-        chargefix_an = chargefix_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargefix_an = chargefix_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
         chargefix_an_format ='{:,}'.format(chargefix_an).replace('',' ')
-        liste_chargefix = chargefix_queryset
+        liste_chargefix = chargefix_queryset.filter(date_saisie__month=date.today().month)
 
         context={
             'liste_chargefix':liste_chargefix,
@@ -3854,9 +3866,11 @@ class AddChargeVarView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        chargvar_queryset = ChargeVariable.objects.filter(vehicule=vehicule)
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -3875,33 +3889,34 @@ class AddChargeVarView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            chargvar_result = ChargeVariable.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_list = ChargeVariable.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            chargvar_jours = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_mois = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_an = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0   
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            chargvar_list = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            chargvar_result = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_jours = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_mois = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            chargvar_an = ChargeVariable.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
+            vehicules = Vehicule.objects.none()
+
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            chargvar_queryset = chargvar_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        chargvar_jours = chargvar_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargvar_jours_format ='{:,}'.format(chargvar_jours).replace('',' ')
+        chargvar_mois = chargvar_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargvar_mois_format ='{:,}'.format(chargvar_mois).replace('',' ')
+        chargvar_an = chargvar_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargvar_an_format ='{:,}'.format(chargvar_an).replace('',' ')
+        liste_chargvar = chargvar_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "chargvar_result": chargvar_result,
-            "chargvar_list": chargvar_list,
-            "chargvar_jours": chargvar_jours,
-            "chargvar_mois": chargvar_mois,
-            "chargvar_an": chargvar_an,
-            'dates': dates,
-            'mois': libelle_mois,
-            'annee': annee,
+            'chargvar_jours_format': chargvar_jours_format,
+            'chargvar_mois_format': chargvar_mois_format,
+            'chargvar_an_format': chargvar_an_format,
+            'liste_chargvar': liste_chargvar,
             'form': form,
             'forms': forms,
         }   
@@ -3945,13 +3960,13 @@ class ListChargeVarView(LoginRequiredMixin, CustomPermissionRequiredMixin, ListV
         if date_debut and date_fin:
             chargevar_queryset = chargevar_queryset.filter(date_saisie__range=[date_debut, date_fin])
         # ################################----Recettes----#############################
-        chargevar_jours = chargevar_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargevar_jours = chargevar_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
         chargevar_jours_format ='{:,}'.format(chargevar_jours).replace('',' ')
         chargevar_mois = chargevar_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
         chargevar_mois_format ='{:,}'.format(chargevar_mois).replace('',' ')
-        chargevar_an = chargevar_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        chargevar_an = chargevar_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
         chargevar_an_format ='{:,}'.format(chargevar_an).replace('',' ')
-        liste_chargevar = chargevar_queryset
+        liste_chargevar = chargevar_queryset.filter(date_saisie__month=date.today().month)
 
         context={
             'liste_chargevar':liste_chargevar,
@@ -4173,9 +4188,14 @@ class AddCartStationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Crea
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        station_queryset = Stationnement.objects.filter(vehicule=vehicule)
+
+        
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -4193,33 +4213,34 @@ class AddCartStationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Crea
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            stat_result = Stationnement.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_list = Stationnement.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            stat_jours = Stationnement.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_mois = Stationnement.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_an = Stationnement.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            stat_list = Stationnement.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('id')
-            stat_result = Stationnement.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_jours = Stationnement.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_mois = Stationnement.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            stat_an = Stationnement.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            vehicules = Vehicule.objects.none()
+        
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            station_queryset = station_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        station_jours = station_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        station_jours_format ='{:,}'.format(station_jours).replace('',' ')
+        station_mois = station_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        station_mois_format ='{:,}'.format(station_mois).replace('',' ')
+        station_an = station_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        station_an_format ='{:,}'.format(station_an).replace('',' ')
+        liste_station = station_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "stat_result": stat_result,
-            "stat_list": stat_list,
-            "stat_jours": stat_jours,
-            "stat_mois": stat_mois,
-            "stat_an": stat_an,
-            'dates': dates,
-            'mois': libelle_mois,
-            'annee': annee,
+            'station_jours_format': station_jours_format,
+            'station_mois_format': station_mois_format,
+            'station_an_format': station_an_format,
+            'liste_station': liste_station,
             'form': form,
             'forms': forms,
         }   
@@ -4315,9 +4336,13 @@ class AddPatenteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateVi
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        patent_queryset = Patente.objects.filter(vehicule=vehicule)
+
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -4335,34 +4360,34 @@ class AddPatenteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateVi
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            pate_result = Patente.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_list = Patente.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            pate_jours = Patente.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_mois = Patente.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_an = Patente.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-           
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            pate_list = Patente.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            pate_result = Patente.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_jours = Patente.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_mois = Patente.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            pate_an = Patente.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            vehicules = Vehicule.objects.none()
+        
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            patent_queryset = patent_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        patente_jours = patent_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        patente_jours_format ='{:,}'.format(patente_jours).replace('',' ')
+        patente_mois = patent_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        patente_mois_format ='{:,}'.format(patente_mois).replace('',' ')
+        patente_an = patent_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        patente_an_format ='{:,}'.format(patente_an).replace('',' ')
+        liste_patente = patent_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "pate_result": pate_result,
-            "pate_list": pate_list,
-            "pate_jours": pate_jours,
-            "pate_mois": pate_mois,
-            "pate_an": pate_an,
-            'dates': dates,
-            'mois': libelle_mois,
-            'annee': annee,
+            'patente_jours_format': patente_jours_format,
+            'patente_mois_format': patente_mois_format,
+            'patente_an_format': patente_an_format,
+            'liste_patente': liste_patente,
             'form': form,
             'forms': forms,
         }   
@@ -4483,9 +4508,13 @@ class AddVignetteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateV
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        vignette_queryset = Assurance.objects.filter(vehicule=vehicule)
+
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -4502,32 +4531,35 @@ class AddVignetteView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateV
                 vehicules = Vehicule.objects.none() 
         else:
             print("*****ALL*******")
+        
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
 
         if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            vigne_result = Vignette.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_list = Vignette.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            vigne_jours = Vignette.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_mois = Vignette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_an = Vignette.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-           
-        else:
-            vigne_list = Vignette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            vigne_result = Vignette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_jours = Vignette.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_mois = Vignette.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            vigne_an = Vignette.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            vignette_queryset = vignette_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        vignette_jours = vignette_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        vignette_jours_format ='{:,}'.format(vignette_jours).replace('',' ')
+        vignette_mois = vignette_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        vignette_mois_format ='{:,}'.format(vignette_mois).replace('',' ')
+        vignette_an = vignette_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        vignette_an_format ='{:,}'.format(vignette_an).replace('',' ')
+        liste_vignette = vignette_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "vigne_result": vigne_result,
-            "vigne_list": vigne_list,
-            "vigne_jours": vigne_jours,
-            "vigne_mois": vigne_mois,
-            "vigne_an": vigne_an,
+            'vignette_jours_format':vignette_jours_format,
+            'vignette_mois_format':vignette_mois_format,
+            'vignette_an_format':vignette_an_format,
+            'liste_vignette':liste_vignette,
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -4652,6 +4684,12 @@ class AddVisitView(LoginRequiredMixin, CustomPermissionRequiredMixin, CreateView
         else:
             print("*****ALL*******")
 
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
+
         if form.is_valid():
             date_debut = form.cleaned_data.get('date_debut')
             date_fin = form.cleaned_data.get('date_fin')
@@ -4771,9 +4809,13 @@ class AddAssuranceView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        assurance_queryset = Assurance.objects.filter(vehicule=vehicule)
+
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -4791,31 +4833,35 @@ class AddAssuranceView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            assur_result = Assurance.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_list = Assurance.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            assur_jours = Assurance.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_mois = Assurance.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_an = Assurance.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1 
-           
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            assur_list = Assurance.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            assur_result = Assurance.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_jours = Assurance.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_mois = Assurance.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1 
-            assur_an = Assurance.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+            vehicules = Vehicule.objects.none()
+        
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            assurance_queryset = assurance_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        assurance_jours = assurance_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        assurance_jours_format ='{:,}'.format(assurance_jours).replace('',' ')
+        assurance_mois = assurance_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        assurance_mois_format ='{:,}'.format(assurance_mois).replace('',' ')
+        assurance_an = assurance_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        assurance_an_format ='{:,}'.format(assurance_an).replace('',' ')
+        liste_recette = assurance_queryset.filter(date_saisie__month=date.today().month)
 
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "assur_result": assur_result,
-            "assur_list": assur_list,
-            "assur_jours": assur_jours,
-            "assur_mois": assur_mois,
-            "assur_an": assur_an,
+            "assurance_an_format": assurance_an_format,
+            "assurance_mois_format": assurance_mois_format,
+            "assurance_jours_format": assurance_jours_format,
+            "liste_recette": liste_recette,
+            
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -4922,6 +4968,13 @@ class AddReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Creat
                 vehicules = Vehicule.objects.none() 
         else:
             print("*****ALL*******")
+
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
+
         reparat_queryset = Reparation.objects.filter(vehicule=vehicule)
         if form.is_valid():
             date_debut = form.cleaned_data.get('date_debut')
@@ -4932,7 +4985,6 @@ class AddReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, Creat
                 reparat_queryset = reparat_queryset.filter(
                     date_saisie__range=[date_debut, date_fin]
                 )
-
             if motif_filter:
                 reparat_queryset = reparat_queryset.filter(motif=motif_filter)
 
@@ -5069,9 +5121,12 @@ class AddPiecEchangeView(LoginRequiredMixin, CustomPermissionRequiredMixin, Crea
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        piechange_queryset = PiecEchange.objects.filter(vehicule=vehicule)
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -5089,30 +5144,33 @@ class AddPiecEchangeView(LoginRequiredMixin, CustomPermissionRequiredMixin, Crea
         else:
             print("*****ALL*******")
 
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            piechange_list = PiecEchange.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            piechange_result = PiecEchange.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_jours = PiecEchange.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_mois = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_an = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0 
-           
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
         else:
-            piechange_list = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            piechange_result = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_jours = PiecEchange.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_mois = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            piechange_an = PiecEchange.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
+            vehicules = Vehicule.objects.none()
+        
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            piechange_queryset = piechange_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        piechange_jours = piechange_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        piechange_jours_format ='{:,}'.format(piechange_jours).replace('',' ')
+        piechange_mois = piechange_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        piechange_mois_format ='{:,}'.format(piechange_mois).replace('',' ')
+        piechange_an = piechange_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        piechange_an_format ='{:,}'.format(piechange_an).replace('',' ')
+        liste_piechange = piechange_queryset.filter(date_saisie__month=date.today().month)
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "piechange_result": piechange_result,
-            "piechange_list": piechange_list,
-            "piechange_jours": piechange_jours,
-            "piechange_mois": piechange_mois,
-            "piechange_an": piechange_an,
+            "piechange_jours_format": piechange_jours_format,
+            "piechange_mois_format": piechange_mois_format,
+            "piechange_an_format": piechange_an_format,
+            "liste_piechange": liste_piechange,
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
@@ -5285,7 +5343,7 @@ class ListReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, List
     ordering = ['date_saisie']
     context_object = 'listereparation'
     timeout_minutes = 300
-    form_class = DateFormMJR
+    form_class = DateFormListRepar
     def dispatch(self, request, *args, **kwargs):
         last_activity = request.session.get('last_activity')
         if last_activity:
@@ -5307,13 +5365,16 @@ class ListReparationView(LoginRequiredMixin, CustomPermissionRequiredMixin, List
             categorie_filter = form.cleaned_data.get('categorie')
             date_debut = form.cleaned_data.get('date_debut')
             date_fin = form.cleaned_data.get('date_fin')
+            motif_filter = form.cleaned_data.get('motif')
 
         if categorie_filter:
             reparat_queryset = reparat_queryset.filter(vehicule__category__category=categorie_filter)
 
         if date_debut and date_fin:
             reparat_queryset = reparat_queryset.filter(date_saisie__range=[date_debut, date_fin])
-        # ################################----Recettes----#############################
+
+        if motif_filter:
+            reparat_queryset = reparat_queryset.filter(motif=motif_filter)
 
         reparat_total = reparat_queryset.filter(date_saisie__month=date.today().month).count()
         reparat_jours = reparat_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
@@ -5374,9 +5435,12 @@ class AddEntretienView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
         mois_en_cours = date.today().month
         libelle_mois = calendar.month_name[mois_en_cours]
         vehicule = get_object_or_404(Vehicule, pk=self.kwargs['pk'])
+        entret_queryset = Entretien.objects.filter(vehicule=vehicule)
         form = DateForm(self.request.GET)
         forms = self.get_form()
         user = self.request.user
+        date_debut = date_fin = None
+
         if user.user_type == "4":
             try:
                 gerant = user.gerants.get()
@@ -5394,30 +5458,35 @@ class AddEntretienView(LoginRequiredMixin, CustomPermissionRequiredMixin, Create
                 vehicules = Vehicule.objects.none() 
         else:
             print("*****ALL*******")
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut'] 
-            date_fin = form.cleaned_data['date_fin']
-            
-            entre_result = Entretien.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_list = Entretien.objects.filter(vehicule=vehicule, date__range=[date_debut, date_fin]).order_by('-id')
-            entre_jours = Entretien.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_mois = Entretien.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_an = Entretien.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0   
-        else:
-            entre_list = Entretien.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).order_by('-id')
-            entre_result = Entretien.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_jours = Entretien.objects.filter(vehicule=vehicule, date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_mois = Entretien.objects.filter(vehicule=vehicule, date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 0 
-            entre_an = Entretien.objects.filter(vehicule=vehicule, date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 0
 
+        search_query = self.request.GET.get("search", "").strip()
+        if search_query:  
+            vehicules = search_vehicules(vehicules, search_query)
+        else:
+            vehicules = Vehicule.objects.none()
+
+        if form.is_valid():
+            date_debut = form.cleaned_data.get('date_debut')
+            date_fin = form.cleaned_data.get('date_fin')
+
+        if date_debut and date_fin:
+            entret_queryset = entret_queryset.filter(date_saisie__range=[date_debut, date_fin])
+
+        entret_jours = entret_queryset.filter(date_saisie=date.today()).aggregate(somme=Sum('montant'))['somme'] or 1
+        entret_jours_format ='{:,}'.format(entret_jours).replace('',' ')
+        entret_mois = entret_queryset.filter(date_saisie__month=date.today().month).aggregate(somme=Sum('montant'))['somme'] or 1
+        entret_mois_format ='{:,}'.format(entret_mois).replace('',' ')
+        entret_an = entret_queryset.filter(date_saisie__year=date.today().year).aggregate(somme=Sum('montant'))['somme'] or 1
+        entret_an_format ='{:,}'.format(entret_an).replace('',' ')
+        liste_entret = entret_queryset.filter(date_saisie__month=date.today().month)
+        
         context = {
             "vehicules": vehicules,
             "vehicule": vehicule,
-            "entre_result": entre_result,
-            "entre_list": entre_list,
-            "entre_jours": entre_jours,
-            "entre_mois": entre_mois,
-            "entre_an": entre_an,
+            'entret_jours_format': entret_jours_format,
+            'entret_mois_format': entret_mois_format,
+            'entret_an_format': entret_an_format,
+            'liste_entret': liste_entret,
             'dates': dates,
             'mois': libelle_mois,
             'annee': annee,
