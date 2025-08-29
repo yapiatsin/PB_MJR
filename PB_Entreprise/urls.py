@@ -6,8 +6,6 @@ urlpatterns = [
     path('B', base, name='base'),
     path('recette journaliere', MyRecetteView.as_view(), name='rec_day'),
     path('bilan day', Bilanday.as_view(), name='bilanday'),
-    path('bilan véhicule', CarFluxView.as_view(), name='bilan-car'),
-    path('bilan vehicule detail /<int:pk>/ vehicule', CarFluxDetailsView.as_view(), name='bilan-car-detail'),
     path('temps arret', TableaustopView.as_view(), name='temps'),
     path('Tableau de bord', DashboardView.as_view(), name='dash'),
     path('Tableau de bord MJR', DashboardMView.as_view(), name='Tbd'),
@@ -54,6 +52,7 @@ urlpatterns = [
 
     #-------------------------------------------------------Recette---------------------------------------------
     path('vehicule /<int:pk>/ recette', AddRecetteView.as_view(), name="add_recettes"),
+    path('Meilleure recette',BestRecetView.as_view(), name="best_recets"),
     path('liste recette',ListRecetView.as_view(), name="list_recet"),
     path('recette /<int:pk>/ modifier', UpdateRecetView.as_view(), name="updat_recet"),
     path('recette /<int:pk>/ delet', delete_recette, name='delete_recets'),
@@ -70,7 +69,6 @@ urlpatterns = [
     path('liste charge variable',ListChargeVarView.as_view(), name="list_charg_var"),
 
     #---------ENTRETIEN-------VISITE------REPARATION-------ASSURANCE-------PIECE-----VIGNETTE-----PATENTE--------PERTE-------ACCIDENT--------#
-
     path('vehicule /<int:pk>/ addautarret',AddAutrarretView.as_view(), name="add_autarrets"), 
     path('Liste autres arrets', ListarretView.as_view(), name='liste_aut_arrets'),
     path('autres arrets /<int:pk>/ delet', delete_autarret, name='delete_autarrets'),
@@ -86,6 +84,7 @@ urlpatterns = [
     
     path('vehicule /<int:pk>/ reparation',AddReparationView.as_view(), name="add_reparation"),
     path('liste reparation',ListReparationView.as_view(), name="list_repa"),
+    path('top vehicule reparation',BestReparationView.as_view(), name="top_repa"),
     path('reparation /<int:pk>/ detail', DetailReparatView.as_view(), name="detail_reparat"),
     path('reparation /<int:pk>/ delete', delete_reparation, name='delete_reparation'),
     

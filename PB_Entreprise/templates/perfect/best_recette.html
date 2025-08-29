@@ -1,8 +1,9 @@
 {% extends 'perfect/base.html' %} 
 {% load static %} 
-{% block title %} Etat des charges fixes {% endblock title %}  
+{% block title %} Meilleures recettes {% endblock title %}  
 {% block page_title %}
-    <img class="profile-user-img" style="border:none; height:55px;width:55px" src="{% static 'chargfix.png' %}" alt="User profile picture">Etat des charges fixes
+    <a href="{% url 'Tbd' %}"><img class="profile-user-img" style="border:none; height:35px;width:35px" src="{% static 'retour.png' %}" alt="Retour"></a>
+    <img class="profile-user-img" style="border:none; height:55px;width:55px" src="{% static 'recet.png' %}" alt="User profile picture">Meilleures recettes 
 {% endblock page_title %} 
 
 {% block page_action %}
@@ -11,7 +12,6 @@
     </a>
 {% endblock page_action %}
 {% block main_content %}
-
 <div class="modal fade" id="modal-sm">
     <div class="modal-dialog modal-sm">
         <div class="modal-content" style="border-radius:25px;">
@@ -37,7 +37,6 @@
                                     {{ form.date_fin }}
                                 </div>
                             </div>
-                            
                             <div class="col-12">
                                 <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Categorie</label>
                                 <div class="form-group">                                    
@@ -47,7 +46,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" style="border-radius:25px;" data-dismiss="modal">Annuler</button>
-                            <a href="{% url 'list_charg_fix' %}" class="btn btn-outline-info" style="border-radius:25px;"><i class="fa fa-refresh"></i></a>
+                            <a href="{% url 'best_recets' %}" class="btn btn-outline-info" style="border-radius:25px;"><i class="fa fa-refresh"></i></a>
                             <button type="submit" class="btn btn-outline-success" style="border-radius:25px;">Afficher</button>
                         </div>
                     </form>
@@ -63,7 +62,7 @@
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Aujourd'hui</span>
             <span class="info-box-number" style="font-size:20px;">
-            {{chargefix_jours_format}}
+            {{recettes_jours_format}}
             <small>frs cfa</small>
             </span>
         </div>
@@ -76,7 +75,7 @@
     <div class="info-box-content">
         <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Mensuelle</span>
         <span class="info-box-number" style="font-size:20px;">
-        {{chargefix_mois_format}}
+        {{recettes_mois_format}}
         <small>frs cfa</small>
         </span>
     </div>
@@ -84,14 +83,13 @@
 </div>
 
 <div class="clearfix hidden-md-up"></div>
-
 <div class="col-12 col-sm-6 col-md-4" >
     <div class="info-box mb-3" style="border-radius:25px;">
         <span class="info-box-icon elevation-1" style="border-radius:25px; background-color:rgba(229, 229, 229, 0.51);"><i class="fas fa-calendar" style="color:rgba(6, 73, 124, 0.54);"></i></span>
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Annuelle</span>
             <span class="info-box-number" style="font-size:20px;">
-            {{chargefix_an_format}}
+            {{recettes_an_format}}
             <small>frs cfa</small>
             </span>
         </div>
@@ -126,69 +124,24 @@
                                             <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
                                                 <thead>
                                                     <tr class="text-center text-danger">
-                                                        <th><input type="checkbox" id="select-all"></th>
                                                         <th>IMMAT</th>
-                                                        <th>MARQUE</th>
                                                         <th>CATEGORIE</th>
                                                         <th>MONTANT</th>
-                                                        <th>DATE SAISIE</th>
-                                                        <th>SAISIR PAR </th>
-                                                        <th>ACTION</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {% if liste_chargefix %} 
-                                                        {% for u in liste_chargefix %}
+                                                    {% if best_recettes %} 
+                                                        {% for u in best_recettes %}
                                                             <tr class="text-center">
-                                                                <td><input type="checkbox" name="selected_recettes" value="{{ u.id }}"></td>
-                                                                <td>
-                                                                    <a href="#" class="mr-3 text-primary">{{u.vehicule.immatriculation}}</a>
-                                                                </td>
-                                                                <td>{{u.vehicule.marque}}</td>
-                                                                <td>{{u.vehicule.category}}</td>
-                                                                <td>{{u.montant}}</td>
-                                                                <td>{{u.date_saisie|date:"d-m-y"}}</td>
-                                                                <td>{{u.auteur.username}}</td>
-                                                                <td class="text-center">
-                                                                    {% for categorie, perms in grouped_permissions.items %}
-                                                                        {% if categorie.categorie == 'permchargfix' %}
-                                                                            {% for perm in perms %}
-                                                                                {% if perm.name == "modifier charge fixe" %}
-                                                                                    <a href="{% url perm.url u.pk %}" class="text-primary">
-                                                                                        <i style="font-size: 20px;" class="fa fa-edit text-warning"></i>
-                                                                                    </a>
-                                                                                {% comment %} {% elif perm.name == "sup recette" %}
-                                                                                    <a href="{% url perm.url u.pk %}" class="text-primary" onclick="return confirm('Etes-vous sûre de vouloir supprimer la recette de {{ u.montant }} du {{ u.vehicule.immatriculation }} saisie le {{ u.date_saisie|date:"d-m-y" }}? Toutes les informations liées seront supprimées.')">
-                                                                                        <i style="font-size: 20px;" class="fa fa-trash text-danger"></i>
-                                                                                    </a> {% endcomment %}
-                                                                                {% endif %}
-                                                                            {% endfor %}
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                </td>
+                                                                <td>{{u.vehicule__immatriculation}}</td>
+                                                                <td>{{u.vehicule__category__category}}</td>
+                                                                <td>{{u.total_recette}}</td>
                                                             </tr>
                                                         {% endfor %} 
                                                     {% endif %}
                                                 </tbody>
                                                 <tfoot>
                                                     <tr class="text-center ">
-                                                        <th>
-                                                            {% for categorie, perms in grouped_permissions.items %}
-                                                                {% if categorie.categorie == 'permvehi' %}
-                                                                    {% for perm in perms %}
-                                                                        {% if perm.name == "sup véhicule" %}
-                                                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Confirmez-vous la suppression des véhicules sélectionnés ?')">
-                                                                                <i class="fa fa-trash"></i>
-                                                                            </button>
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </th>
-                                                        <th>---</th>
-                                                        <th>---</th>
-                                                        <th>---</th>
-                                                        <th>---</th>
                                                         <th>---</th>
                                                         <th>---</th>
                                                         <th>---</th>

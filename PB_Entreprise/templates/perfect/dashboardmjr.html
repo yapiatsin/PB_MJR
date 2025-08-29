@@ -2,7 +2,30 @@
 {% load static %} 
 {% block title %} Tableau de bord {% endblock title %} 
 {% block navbar_nav %}
-    <a type="" class="btn text-danger" style="font-weight:700" data-toggle="modal" data-target="#modal-lg" title="Cliquer pour selectionner un véhicule">Statistique financière par vehicule <i class='fa fa-plus-square'></i></a>
+    {% comment %} <a type="" class="btn text-danger" style="font-weight:700" data-toggle="modal" data-target="#modal-lg" title="Cliquer pour selectionner un véhicule">Statistique financière par vehicule <i class='fa fa-plus-square'></i></a> {% endcomment %}
+    {% comment %} <form id="basic-form" method="get" novalidate>
+        <div class="row clearfix">
+            <div class="col-12">
+                <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Categorie</label>
+                <div class="form-group">                                    
+                    {{ form.immatriculation }}
+        <button type="submit" class="btn btn-outline-success" style="border-radius:25px;">Afficher</button>
+
+                </div>
+            </div>
+        </div>
+
+    </form> {% endcomment %}
+    <form class="search-form" method="get">
+        <div class="input-group">
+            {% comment %} <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Saisissez l'immatriculation du véhicule..." style="border-radius: 50px 0 0 50px;"> {% endcomment %}
+            {{ form.immatriculation }}
+            <div class="input-group-append">
+            <button type="submit" name="submit" class="btn btn-danger"><i class="fas fa-search"></i></button>
+            <a href="{% url 'Tbd' %}" name="submit" class="btn btn-danger" style="border-radius: 0 50px 50px 0;"><i class="fas fa-refresh text-light"></i></a>
+            </div>
+        </div>
+    </form>
 {% endblock navbar_nav %} 
 
 {% block page_title %}
@@ -47,6 +70,12 @@
                                 <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Categorie</label>
                                 <div class="form-group">                                    
                                     {{ form.categorie }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label style="font-weight:700;color: rgba(152, 152, 152, 0.85); font-size:15px;">Categorie</label>
+                                <div class="form-group">                                    
+                                    {{ form.immatriculation }}
                                 </div>
                             </div>
                         </div>
@@ -887,8 +916,11 @@
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h3 class="card-title">{{ categories|length }} Meilleur{% if categories|length > 1  %}s{% endif %} recette</h3>
+                                            <h3 class="card-title">{{ best_recettes|length }} Meilleur{% if best_recettes|length > 1  %}s{% endif %} recette{% if best_recettes|length > 1  %}s{% endif %}</h3>
                                             <div class="card-tools">
+                                                <a href="{% url 'best_recets' %}" class="btn btn-tool text-primary" title="Voir la liste des meilleures recettes">
+                                                    Voir <i class="fas fa-plus"></i>
+                                                </a>
                                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                                     <i class="fas fa-minus"></i>
                                                 </button>
@@ -897,24 +929,14 @@
                                         <!-- /.card-header -->
                                         <div class="card-body p-0">
                                             <ul class="products-list product-list-in-card pl-2 pr-2">
-                                                <li class="item">
-                                                    <div class="product-img">
-                                                        <a href="{% url "all_vehi" %}" class="product-title text-secondary">Tous les véhicules</a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <a href="javascript:void(0)" class="product-title">
-                                                            <span class="badge badge-warning float-right p-2">- {{total_veh}} -</span>
-                                                        </a>
-                                                    </div>
-                                                </li>
-                                                {% for c in categories %}
+                                                {% for c in best_recettes %}
                                                     <li class="item">
                                                         <div class="product-img">
-                                                            <a href="{% url 'add_vehi' c.pk %}" class="product-title">{{c.category}}</a>
+                                                            <a href="javascript:void(0)" class="product-title text-secondary">{{c.vehicule.immatriculation}}</a>
                                                         </div>
                                                         <div class="product-info">
                                                             <a href="javascript:void(0)" class="product-title">
-                                                                <span class="badge badge-light float-right p-2">- {{c.nb_vehicules}} -</span>
+                                                                <span class="badge badge-light float-right p-2">- {{c.recs}} -</span>
                                                             </a>
                                                         </div>
                                                     </li>
@@ -940,7 +962,7 @@
                                     <!-- BAR -->
                                     <div class="card">
                                         <div class="card-header">
-                                            <h3 class="card-title">{{ categories|length }} Meilleur{% if categories|length > 1  %}s{% endif %} Marge de contribution</h3>
+                                            <h3 class="card-title">{{ bests_taux|length }} Meilleur{% if bests_taux|length > 1  %}s{% endif %} Marge{% if bests_taux|length > 1  %}s{% endif %} de contribution</h3>
                                             <div class="card-tools">
                                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                                     <i class="fas fa-minus"></i>
@@ -950,24 +972,14 @@
                                         <!-- /.card-header -->
                                         <div class="card-body p-0">
                                             <ul class="products-list product-list-in-card pl-2 pr-2">
-                                                <li class="item">
-                                                    <div class="product-img">
-                                                        <a href="{% url "all_vehi" %}" class="product-title text-secondary">Tous les véhicules</a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <a href="javascript:void(0)" class="product-title">
-                                                            <span class="badge badge-warning float-right p-2">- {{total_veh}} -</span>
-                                                        </a>
-                                                    </div>
-                                                </li>
-                                                {% for c in categories %}
+                                                {% for c in bests_taux %}
                                                     <li class="item">
                                                         <div class="product-img">
-                                                            <a href="{% url 'add_vehi' c.pk %}" class="product-title">{{c.category}}</a>
+                                                            <a href="javascript:void(0)" class="product-title text-secondary">{{c.vehicule.immatriculation}}</a>
                                                         </div>
                                                         <div class="product-info">
                                                             <a href="javascript:void(0)" class="product-title">
-                                                                <span class="badge badge-light float-right p-2">- {{c.nb_vehicules}} -</span>
+                                                                <span class="badge badge-light float-right p-2">- {{c.taux}} -</span>
                                                             </a>
                                                         </div>
                                                     </li>
@@ -993,8 +1005,11 @@
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h3 class="card-title">{{ categories|length }} Véhicule{% if categories|length > 1  %}s{% endif %} faisant le plus d'arrêt</h3>
+                                            <h3 class="card-title">{{ top_reparations|length }} Véhicule{% if top_reparations|length > 1  %}s{% endif %} faisant le plus de réparation</h3>
                                             <div class="card-tools">
+                                                <a href="{% url 'top_repa' %}" class="btn btn-tool text-primary" title="Voir la liste des meilleures recettes">
+                                                    Voir <i class="fas fa-plus"></i>
+                                                </a>
                                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                                     <i class="fas fa-minus"></i>
                                                 </button>
@@ -1003,24 +1018,14 @@
                                         <!-- /.card-header -->
                                         <div class="card-body p-0">
                                             <ul class="products-list product-list-in-card pl-2 pr-2">
-                                                <li class="item">
-                                                    <div class="product-img">
-                                                        <a href="{% url "all_vehi" %}" class="product-title text-secondary">Tous les véhicules</a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <a href="javascript:void(0)" class="product-title">
-                                                            <span class="badge badge-warning float-right p-2">- {{total_veh}} -</span>
-                                                        </a>
-                                                    </div>
-                                                </li>
-                                                {% for c in categories %}
+                                                {% for c in top_reparations %}
                                                     <li class="item">
                                                         <div class="product-img">
-                                                            <a href="{% url 'add_vehi' c.pk %}" class="product-title">{{c.category}}</a>
+                                                            <a href="javascript:void(0)" class="product-title text-secondary">{{c.vehicule__immatriculation}}</a>
                                                         </div>
                                                         <div class="product-info">
                                                             <a href="javascript:void(0)" class="product-title">
-                                                                <span class="badge badge-light float-right p-2">- {{c.nb_vehicules}} -</span>
+                                                                <span class="badge badge-light float-right p-2">- {{c.total_reparations }} -</span>
                                                             </a>
                                                         </div>
                                                     </li>
@@ -1038,4 +1043,4 @@
 
     </div>
 </div>
-{% endblock main_content %} 
+{% endblock main_content %}

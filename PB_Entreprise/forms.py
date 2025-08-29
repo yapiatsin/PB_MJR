@@ -15,6 +15,7 @@ class DateFormMJR(forms.Form):
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    immatriculation = forms.CharField(required=False, max_length=30, widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder':"Saisissez l'immatriculation"}),label="Immatriculation")
 
 class DatebilanForm(forms.Form):
     date_bilan = forms.DateField(widget=forms.DateInput(attrs={'type':'date','class':'form-control'}))

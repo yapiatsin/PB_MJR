@@ -1,14 +1,10 @@
 {% extends 'perfect/base.html' %} 
 {% load static %} 
 {% block title %}Saisie & Etat des visites techniques  {% endblock title %} 
-{% block navbar_nav %}
-  <a type="" class="btn text-danger" style="font-weight:700" data-toggle="modal" data-target="#modal-lg1" title="Cliquer pour selectionner un véhicule">Statistique financière par vehicule <i class='fa fa-plus-square'></i></a>
-{% endblock navbar_nav %} 
 {% block page_title %}
 <a href="{% url 'temps_arrets' %}"><img class="profile-user-img" style="border:none; height:35px;width:35px" src="{% static 'retour.png' %}" alt="Retour"></a>
 <img class="profile-user-img" style="border:none; height:45px;width:45px" src="{% static 'visit.png' %}" alt="User profile picture">Saisie & Etat des visites techniques du <b class="text-danger"> {{vehicule}}</b> 
 {% endblock page_title %}
-
 {% block page_action %}
     <a class="nav-link" data-toggle="modal" data-target="#modal-sm" style="font-size: 18px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700;">filtre
         <i style="font-size: 20px; color: #06497C; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" class="fa fa-calendar"></i>
@@ -92,7 +88,7 @@
 
 <div class="col-12 col-sm-6 col-md-4">
     <div class="info-box" style="border-radius:25px;">
-        <span class="info-box-icon bg-info elevation-1" style="border-radius:25px;"><i class="fas fa-clock"></i></span>
+        <span class="info-box-icon elevation-1" style="border-radius:25px; background-color:rgba(229, 229, 229, 0.51);"><i class="fas fa-clock" style="color:rgba(6, 73, 124, 0.54);"></i></span>
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Aujourd'hui</span>
             <span class="info-box-number" style="font-size:20px;">
@@ -105,7 +101,7 @@
 <div class="clearfix hidden-md-up"></div>
 <div class="col-12 col-sm-6 col-md-4">
     <div class="info-box mb-3" style="border-radius:25px;">
-    <span class="info-box-icon bg-primary elevation-1" style="border-radius:25px;"><i class="fa fa-calendar"></i></span>
+    <span class="info-box-icon elevation-1" style="border-radius:25px; background-color:rgba(229, 229, 229, 0.51);"><i class="fa fa-calendar" style="color:rgba(6, 73, 124, 0.54);"></i></span>
     <div class="info-box-content">
         <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Mensuelle</span>
         <span class="info-box-number" style="font-size:20px;">
@@ -118,7 +114,7 @@
 <div class="clearfix hidden-md-up"></div>
 <div class="col-12 col-sm-6 col-md-4" >
     <div class="info-box mb-3" style="border-radius:25px;">
-        <span class="info-box-icon bg-success elevation-1" style="border-radius:25px;"><i class="fas fa-calendar"></i></span>
+        <span class="info-box-icon elevation-1" style="border-radius:25px; background-color:rgba(229, 229, 229, 0.51);"><i class="fas fa-calendar" style="color:rgba(6, 73, 124, 0.54);"></i></span>
         <div class="info-box-content">
             <span class="info-box-text" style="font-size:18px; font-weight: 700; color: #06497C;">Annuelle</span>
             <span class="info-box-number" style="font-size:20px;">
